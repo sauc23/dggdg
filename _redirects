@@ -8,7 +8,7 @@
 /e/* https://raw.githubusercontent.com/ypxa/w/master/:splat 200
 /assets/media/* https://clever-gnome-cbff99.netlify.app/assets/media/:splat 200
 /assets/scripts/* https://clever-gnome-cbff99.netlify.app/assets/scripts/:splat 200
-/assets/styles/*https://clever-gnome-cbff99.netlify.app/assets/styles/:splat 200
+/assets/styles/* https://clever-gnome-cbff99.netlify.app/assets/styles/:splat 200
 / /index.html 200
 /tos /tos.html 200
 /emu /emu.html 200
