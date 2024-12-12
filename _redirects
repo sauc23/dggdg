@@ -6,7 +6,9 @@
 /e/* https://raw.githubusercontent.com/v-5x/x/fixy/:splat 200
 /e/* https://raw.githubusercontent.com/ypxa/y/main/:splat 200 
 /e/* https://raw.githubusercontent.com/ypxa/w/master/:splat 200
-/assets/* https://raw.githubusercontent.com/UltraN0va288/Cosmic/refs/heads/main/static/assets/:splat 200
+/assets/media/* https://raw.githubusercontent.com/UltraN0va288/Cosmic/refs/heads/main/static/assets/media/:splat 200
+/assets/scripts/* https://raw.githubusercontent.com/UltraN0va288/Cosmic/refs/heads/main/static/assets/scripts/:splat 200
+/assets/styles/* https://raw.githubusercontent.com/UltraN0va288/Cosmic/refs/heads/main/static/assets/styles/:splat 200
 / /index.html 200
 /tos /tos.html 200
 /emu /emu.html 200
