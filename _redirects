@@ -3,6 +3,7 @@
 /s /settings.html 200
 /t /tabs.html 200
 /p /go.html 200
+/assets/* https://raw.githubusercontent.com/UltraN0va288/Cosmic/refs/heads/main/static/assets/:splat 200
 / /index.html 200
 /tos /tos.html 200
 /emu /emu.html 200
