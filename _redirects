@@ -5,6 +5,7 @@
 /p /go.html 200
 /games/* https://hdun.org/games/:splat 200
 /~/* https://hdun.org/~/:splat 200
+/soon/* https://lingering-sound-cfc3.alappan077.workers.dev/soon/:splat 200
 /e/* https://raw.githubusercontent.com/v-5x/x/fixy/:splat 200
 /e/* https://raw.githubusercontent.com/ypxa/y/main/:splat 200 
 /e/* https://raw.githubusercontent.com/ypxa/w/master/:splat 200
