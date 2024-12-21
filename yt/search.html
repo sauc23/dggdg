@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Search</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .search-container input {
+            padding: 10px;
+            width: 300px;
+            border: none;
+            border-radius: 5px;
+        }
+        .search-container button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #1e88e5;
+            color: white;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .video-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #1e1e1e;
+            border-radius: 5px;
+        }
+        .video-item img {
+            width: 120px;
+            height: 90px;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .video-info {
+            flex-grow: 1;
+        }
+        .video-info h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+        .video-info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .video-info .uploader {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>YouTube Video Search</h1>
+    <div class="search-container">
+        <input type="text" id="searchQuery" placeholder="Search for videos...">
+        <button onclick="searchVideos()">Search</button>
+    </div>
+    <div id="results"></div>
+
+    <script>
+        async function searchVideos() {
+            const query = document.getElementById('searchQuery').value;
+            const response = await fetch(`https://pipedapi.reallyaweso.me/search?q=${encodeURIComponent(query)}&filter=all`);
+            const data = await response.json();
+            displayResults(data.items);
+        }
+
+        function displayResults(items) {
+            const resultsContainer = document.getElementById('results');
+            resultsContainer.innerHTML = ''; // Clear previous results
+
+            items.forEach(item => {
+                const videoId = item.url.split('=')[1];
+                const videoElement = document.createElement('div');
+                videoElement.className = 'video-item';
+                videoElement.innerHTML = `
+                    <img src="${item.thumbnail}" alt="${item.title}">
+                    <div class="video-info">
+                        <h3>${item.title}</h3>
+                        <p class="uploader">Uploaded by: ${item.uploaderName}</p>
+                        <p>Uploaded: ${item.uploadedDate}</p>
+                        <p>Views: ${item.views}</p>
+                        <button onclick="window.location.href='vid.html?id=${videoId}'">Watch (360P)</button>
+                
+                    </div>
+                `;
+                resultsContainer.appendChild(videoElement);
+            });
+        }
+
+        // Function to get query parameter from URL
+        function getQueryParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Automatically submit the search if a query parameter is present
+        window.onload = function() {
+            const query = getQueryParameter('q');
+            if (query) {
+                document.getElementById('searchQuery').value = query;
+                searchVideos();
+            }
+        };
+    </script>
+
+</body>
+</html>

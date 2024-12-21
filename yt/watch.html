@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch Video</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .search-container input {
+            padding: 10px;
+            width: 300px;
+            border: none;
+            border-radius: 5px;
+        }
+        .search-container button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #1e88e5;
+            color: white;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .video-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        iframe {
+            width: 100%;
+            max-width: 800px;
+            height: 450px;
+            border: none;
+        }
+        .back-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #1e88e5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Watch Video</h1>
+    <div class="search-container">
+        <input type="text" id="searchQuery" placeholder="Search for videos...">
+        <button onclick="searchVideos()">Search</button>
+    </div>
+    
+    <div class="video-container" id="videoContainer">
+        <!-- YouTube video will be embedded here -->
+    </div>
+
+    <a class="back-button" href="search.html">Back to Search</a>
+
+    <script>
+        function getVideoId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+
+        async function searchVideos() {
+            const query = document.getElementById('searchQuery').value;
+            window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+        }
+
+        function loadVideo() {
+            const videoId = getVideoId();
+            if (videoId) {
+                const videoContainer = document.getElementById('videoContainer');
+                videoContainer.innerHTML = `
+                    <iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>
+                `;
+            } else {
+                document.getElementById('videoContainer').innerHTML = '<p>Video not found.</p>';
+            }
+        }
+
+        // Load the video when the page is loaded
+        window.onload = loadVideo;
+    </script>
+
+</body>
+</html>

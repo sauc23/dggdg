@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch Video</title>
+    <link href="https://vjs.zencdn.net/7.15.4/video-js.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .search-container input {
+            padding: 10px;
+            width: 300px;
+            border: none;
+            border-radius: 5px;
+        }
+        .search-container button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #1e88e5;
+            color: white;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .video-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .back-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #1e88e5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+        }
+        .error-message {
+            text-align: center;
+            color: #ff0000;
+        }
+        .refresh-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #1e88e5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Watch Video</h1>
+    <div class="search-container">
+        <input type="text" id="searchQuery" placeholder="Search for videos...">
+        <button onclick="searchVideos()">Search</button>
+    </div>
+    
+    <div class="video-container" id="videoContainer">
+        <!-- Video.js player will be embedded here -->
+    </div>
+
+    <a class="back-button" href="search.html">Back to Search</a>
+
+    <script src="https://vjs.zencdn.net/7.15.4/video.min.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+
+        async function searchVideos() {
+            const query = document.getElementById('searchQuery').value;
+            window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+        }
+
+        async function loadVideo() {
+            const videoId = urlParams.get('id');
+            const videoContainer = document.getElementById('videoContainer');
+            if (videoId) {
+                const videoUrl = `https://ytprro.jdx3.org/video/${videoId}`;
+                const posterUrl = `https://cors-proxy.cooks.fyi/https://i3.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
+                try {
+                    const response = await fetch(videoUrl, { method: 'HEAD' });
+                    if (response.ok) {
+                        videoContainer.innerHTML = `
+                            <video id="my-video" class="video-js" playsinline poster="${posterUrl}"  controls preload="auto" width="640" height="360">
+                                <source src="${videoUrl}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        `;
+                        // Initialize Video.js
+                        videojs('my-video');
+                    } else {
+                        throw new Error('Server error');
+                    }
+                } catch (error) {
+                    videoContainer.innerHTML = `
+                        <div class="error-message">
+                            <p>The server is being rate-limited or bot-blocked.</p>
+                            <button class="refresh-button" onclick="loadVideo()">Refresh Video</button>
+                        </div>
+                    `;
+                }
+            } else {
+                videoContainer.innerHTML = '<p>Video not found.</p>';
+            }
+        }
+
+        // Load the video when the page is loaded
+        window.onload = loadVideo;
+    </script>
+
+</body>
+</html>
