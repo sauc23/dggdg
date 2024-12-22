@@ -6,7 +6,7 @@
     <title>Listen to Audio</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.6.8/plyr.css" />
-    <style>
+      <style>
         body {
             background-color: #121212;
             color: #ffffff;
@@ -24,14 +24,20 @@
         }
         .audio-container {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
             margin-bottom: 20px;
         }
         .error-message {
             text-align: center;
             color: #ff0000;
         }
-    </style>
+        .thumbnail {
+            width: 100%;
+            max-width: 640px;
+            margin-bottom: 10px;
+        }
+           </style>
 </head>
 <body>
 
@@ -51,23 +57,36 @@
 
     <script src="https://cdn.plyr.io/3.6.8/plyr.polyfilled.js"></script>
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
+       const urlParams = new URLSearchParams(window.location.search);
 
-        function searchAudio() {
-            const query = document.getElementById('searchQuery').value;
-            window.location.href = `search.html?q=${encodeURIComponent(query)}`;
-        }
+function searchAudio() {
+    const query = document.getElementById('searchQuery').value;
+    window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+}
 
-        function loadAudio() {
-            const audioId = urlParams.get('id');
-            const audioContainer = document.getElementById('audioContainer');
+function loadAudio() {
+    const audioId = urlParams.get('id');
+    const audioContainer = document.getElementById('audioContainer');
 
-            if (audioId) {
-                const audioUrl = `/ytprx/audio/${audioId}.mp3`; // Assuming audio files are in mp3 format
-                const posterUrl = `https://cors-proxy.cooks.fyi/https://i3.ytimg.com/vi/${audioId}/maxresdefault.jpg`;
+    if (audioId) {
+        const audioUrl = `/ytprx/audio/${audioId}.mp3`; // Assuming audio files are in mp3 format
+        const infoUrl = `/ytprx/info/${audioId}.json`; // Fetch audio info
+        const posterUrl = `https://cors-proxy.cooks.fyi/https://i3.ytimg.com/vi/${audioId}/maxresdefault.jpg`;
 
+        // Fetch audio information
+        fetch(infoUrl)
+            .then(response => response.json())
+            .then(data => {
+                const snippet = data.data.snippet;
+                const title = snippet.title;
+                const description = snippet.description;
+
+                // Update the audio container with title, description, thumbnail, and audio player
                 audioContainer.innerHTML = `
-                    <audio controls crossorigin playsinline poster="${posterUrl}" id="player">
+                    <img src="${posterUrl}" alt="${title}" class="thumbnail">
+                    <h2>${title}</h2>
+                    <p>${description}</p>
+                    <audio controls crossorigin playsinline id="player" autoplay>
                         <source src="${audioUrl}" type="audio/mp3">
                         Your browser does not support the audio tag.
                     </audio>
@@ -78,13 +97,33 @@
                     settings: ['play', 'mute', 'volume', 'fullscreen', 'download'],
                     download: true // Enable download button
                 });
-            } else {
-                audioContainer.innerHTML = '<p class="error-message">Audio not found.</p>';
-            }
-        }
 
-        // Load the audio when the page is loaded
-        window.onload = loadAudio;
+                // Retry loading audio if it fails
+                player.on('error', () => {
+                    console.error('Audio failed to load, retrying...');
+                    setTimeout(() => {
+                        player.source = {
+                            type: 'audio',
+                            sources: [{
+                                src: audioUrl,
+                                type: 'audio/mp3',
+                            }],
+                        };
+                    }, 1000); // Retry after 1 second
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching audio info:', error);
+                audioContainer.innerHTML = '<p class="error-message">Audio not found.</p>';
+            });
+    } else {
+        audioContainer.innerHTML = '<p class="error-message">Audio not found.</p>';
+    }
+}
+
+// Load the audio when the page is loaded
+window.onload = loadAudio;
+
     </script>
 
 </body>
