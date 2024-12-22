@@ -36,7 +36,7 @@
             <input type="text" id="searchQuery" class="form-control me-2" placeholder="Search for videos...">
             <button class="btn btn-primary" onclick="searchVideos()">Search</button>
         </div>
-        
+        <h4>Note: LARGE/LONG VIDEOS WILL NOT WORK THE FIRST TIME</h4>
         <div class="video-container" id="videoContainer">
             <!-- Video.js player will be embedded here -->
         </div>
@@ -77,6 +77,7 @@
                         Your browser does not support the video tag.
                     </video>
                     <h2>${title}</h2>
+                    <h4>Info:</h4>
                     <p>${description}</p>
                    
                 `;
