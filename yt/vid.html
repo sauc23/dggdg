@@ -46,14 +46,14 @@
 
     <script src="https://vjs.zencdn.net/7.15.4/video.min.js"></script>
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
+     const urlParams = new URLSearchParams(window.location.search);
 
-        function searchVideos() {
-            const query = document.getElementById('searchQuery').value;
-            window.location.href = `search.html?q=${encodeURIComponent(query)}`;
-        }
+function searchVideos() {
+    const query = document.getElementById('searchQuery').value;
+    window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+}
 
-        function loadVideo() {
+function loadVideo() {
     const videoId = urlParams.get('id');
     const videoContainer = document.getElementById('videoContainer');
 
@@ -72,20 +72,19 @@
 
                 // Update the video container with title, description, and video player
                 videoContainer.innerHTML = `
-                 <video id="my-video" class="video-js" playsinline poster="${posterUrl}" controls preload="auto" width="640" height="360">
+                    <video id="my-video" class="video-js" playsinline poster="${posterUrl}" controls preload="auto" width="640" height="360">
                         <source src="${videoUrl}" type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
                     <h2>${title}</h2>
                     <h4>Info:</h4>
                     <p>${description}</p>
-                   
                 `;
 
                 // Initialize Video.js immediately
                 videojs('my-video');
-            })
-             // Set media session metadata
+
+                // Set media session metadata
                 if ('mediaSession' in navigator) {
                     navigator.mediaSession.metadata = new MediaMetadata({
                         title: title,
@@ -98,6 +97,7 @@
                         ]
                     });
                 }
+            })
             .catch(error => {
                 console.error('Error fetching video info:', error);
                 videoContainer.innerHTML = '<p class="error-message">Video not found.</p>';
@@ -107,9 +107,9 @@
     }
 }
 
+// Load the video when the page is loaded
+window.onload = loadVideo;
 
-        // Load the video when the page is loaded
-        window.onload = loadVideo;
     </script>
 
 </body>
