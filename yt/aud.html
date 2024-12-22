@@ -71,7 +71,7 @@ function loadAudio() {
     if (audioId) {
         const audioUrl = `/ytprx/audio/${audioId}.mp3`; // Assuming audio files are in mp3 format
         const infoUrl = `/ytprx/info/${audioId}.json`; // Fetch audio info
-        const posterUrl = `https://cors-proxy.cooks.fyi/https://i3.ytimg.com/vi/${audioId}/maxresdefault.jpg`;
+        const posterUrl = `/ytth/vi/${audioId}/hqdefault.jpg`;
 
         // Fetch audio information
         fetch(infoUrl)
