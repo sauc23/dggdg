@@ -4,36 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Video Search</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             background-color: #121212;
             color: #ffffff;
             font-family: Arial, sans-serif;
-            margin: 0;
             padding: 20px;
         }
         h1 {
             text-align: center;
+            margin-bottom: 20px;
         }
         .search-container {
             display: flex;
             justify-content: center;
             margin-bottom: 20px;
-        }
-        .search-container input {
-            padding: 10px;
-            width: 300px;
-            border: none;
-            border-radius: 5px;
-        }
-        .search-container button {
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            background-color: #1e88e5;
-            color: white;
-            cursor: pointer;
-            margin-left: 10px;
         }
         .video-item {
             display: flex;
@@ -67,12 +53,14 @@
 </head>
 <body>
 
-    <h1>YouTube Video Search</h1>
-    <div class="search-container">
-        <input type="text" id="searchQuery" placeholder="Search for videos...">
-        <button onclick="searchVideos()">Search</button>
+    <div class="container">
+        <h1>YouTube Video Search</h1>
+        <div class="search-container mb-4">
+            <input type="text" id="searchQuery" class="form-control me-2" placeholder="Search for videos...">
+            <button class="btn btn-primary" onclick="searchVideos()">Search</button>
+        </div>
+        <div id="results"></div>
     </div>
-    <div id="results"></div>
 
     <script>
         async function searchVideos() {
@@ -97,8 +85,8 @@
                         <p class="uploader">Uploaded by: ${item.uploaderName}</p>
                         <p>Uploaded: ${item.uploadedDate}</p>
                         <p>Views: ${item.views}</p>
-                        <button onclick="window.location.href='vid.html?id=${videoId}'">Watch (480P)</button>
-                        <button onclick="window.location.href='aud.html?id=${videoId}'">Listen (MP3)</button>
+                        <button class="btn btn-success" onclick="window.location.href='vid.html?id=${videoId}'">Watch (480P)</button>
+                        <button class="btn btn-info" onclick="window.location.href='aud.html?id=${videoId}'">Listen (MP3)</button>
                     </div>
                 `;
                 resultsContainer.appendChild(videoElement);
