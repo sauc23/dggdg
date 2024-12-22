@@ -21,7 +21,7 @@
             justify-content: center;
             margin-bottom: 20px;
         }
-        .video-item {
+        .item {
             display: flex;
             align-items: center;
             margin-bottom: 20px;
@@ -29,24 +29,24 @@
             background-color: #1e1e1e;
             border-radius: 5px;
         }
-        .video-item img {
+        .item img {
             width: 120px;
             height: 90px;
             border-radius: 5px;
             margin-right: 10px;
         }
-        .video-info {
+        .info {
             flex-grow: 1;
         }
-        .video-info h3 {
+        .info h3 {
             margin: 0;
             font-size: 16px;
         }
-        .video-info p {
+        .info p {
             margin: 5px 0;
             font-size: 14px;
         }
-        .video-info .uploader {
+        .info .uploader {
             font-weight: bold;
         }
     </style>
@@ -75,21 +75,36 @@
             resultsContainer.innerHTML = ''; // Clear previous results
 
             items.forEach(item => {
-                const videoId = item.url.split('=')[1];
-                const videoElement = document.createElement('div');
-                videoElement.className = 'video-item';
-                videoElement.innerHTML = `
-                    <img src="https://cors-proxy.cooks.fyi/${item.thumbnail}" alt="${item.title}">
-                    <div class="video-info">
-                        <h3>${item.title}</h3>
-                        <p class="uploader">Uploaded by: ${item.uploaderName}</p>
-                        <p>Uploaded: ${item.uploadedDate}</p>
-                        <p>Views: ${item.views}</p>
-                        <button class="btn btn-success" onclick="window.location.href='vid.html?id=${videoId}'">Watch (480P)</button>
-                        <button class="btn btn-info" onclick="window.location.href='aud.html?id=${videoId}'">Listen (MP3)</button>
-                    </div>
-                `;
-                resultsContainer.appendChild(videoElement);
+                const element = document.createElement('div');
+                element.className = 'item';
+
+                if (item.type === 'channel') {
+                    const channelId = item.url.split('/').pop();
+                    element.innerHTML = `
+                        <img src="https://cors-proxy.cooks.fyi/${item.thumbnail}" alt="${item.name}">
+                        <div class="info">
+                            <h3>${item.name}</h3>
+                            <p class="uploader">${item.subscribers} Subscribers</p>
+                            <p>INFO: ${item.description || 'No description available'}</p>
+                            <button class="btn btn-success" onclick="window.location.href='chn.html?id=${channelId}'">View</button>
+                        </div>
+                    `;
+                } else if (item.type === 'video') {
+                    const videoId = item.url.split('=')[1];
+                    element.innerHTML = `
+                        <img src="https://cors-proxy.cooks.fyi/${item.thumbnail}" alt="${item.title}">
+                        <div class="info">
+                            <h3>${item.title}</h3>
+                            <p class="uploader">Uploaded by: ${item.uploaderName}</p>
+                            <p>Uploaded: ${item.uploadedDate}</p>
+                            <p>Views: ${item.views}</p>
+                            <button class="btn btn-success" onclick="window.location.href='vid.html?id=${videoId}'">Watch (480P)</button>
+                            <button class="btn btn-info" onclick="window.location.href='aud.html?id=${videoId}'">Listen (MP3)</button>
+                        </div>
+                    `;
+                }
+
+                resultsContainer.appendChild(element);
             });
         }
 
