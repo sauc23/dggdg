@@ -84,12 +84,13 @@ function loadAudio() {
                 // Update the audio container with title, description, thumbnail, and audio player
                 audioContainer.innerHTML = `
                     <img src="${posterUrl}" alt="${title}" class="thumbnail">
-                    <h2>${title}</h2>
-                    <p>${description}</p>
                     <audio controls crossorigin playsinline id="player" autoplay>
                         <source src="${audioUrl}" type="audio/mp3">
                         Your browser does not support the audio tag.
                     </audio>
+                    <h2>${title}</h2>
+                    <p>${description}</p>
+                    
                 `;
 
                 // Initialize Plyr
