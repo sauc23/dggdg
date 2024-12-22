@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listen to Audio</title>
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.6.8/plyr.css" />
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .search-container input {
+            padding: 10px;
+            width: 300px;
+            border: none;
+            border-radius: 5px;
+        }
+        .search-container button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #1e88e5;
+            color: white;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .audio-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .back-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #1e88e5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+        }
+        .error-message {
+            text-align: center;
+            color: #ff0000;
+        }
+        .refresh-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #1e88e5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Listen to Audio</h1>
+    <div class="search-container">
+        <input type="text" id="searchQuery" placeholder="Search for audio...">
+        <button onclick="searchAudio()">Search</button>
+    </div>
+    
+    <div class="audio-container" id="audioContainer">
+        <!-- Plyr audio player will be embedded here -->
+    </div>
+
+    <a class="back-button" href="search.html">Back to Search</a>
+
+    <script src="https://cdn.plyr.io/3.6.8/plyr.polyfilled.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+
+        function searchAudio() {
+            const query = document.getElementById('searchQuery').value;
+            window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+        }
+
+        function loadAudio() {
+            const audioId = urlParams.get('id');
+            const audioContainer = document.getElementById('audioContainer');
+
+            if (audioId) {
+                const audioUrl = `/ytprx/audio/${audioId}.mp3`; // Assuming audio files are in mp3 format
+                const posterUrl = `https://cors-proxy.cooks.fyi/https://i3.ytimg.com/vi/${audioId}/maxresdefault.jpg`;
+
+                audioContainer.innerHTML = `
+                    <audio controls crossorigin playsinline poster="${posterUrl}" id="player">
+                        <source src="${audioUrl}" type="audio/mp3">
+                        Your browser does not support the audio tag.
+                    </audio>
+                `;
+
+                // Initialize Plyr
+                const player = new Plyr('#player', {
+                    settings: ['play', 'mute', 'volume', 'fullscreen', 'download'],
+                    download: true // Enable download button
+                });
+            } else {
+                audioContainer.innerHTML = '<p>Audio not found.</p>';
+            }
+        }
+
+        // Load the audio when the page is loaded
+        window.onload = loadAudio;
+    </script>
+
+</body>
+</html>
