@@ -88,39 +88,28 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
 
-        async function searchVideos() {
+        function searchVideos() {
             const query = document.getElementById('searchQuery').value;
             window.location.href = `search.html?q=${encodeURIComponent(query)}`;
         }
 
-        async function loadVideo() {
+        function loadVideo() {
             const videoId = urlParams.get('id');
             const videoContainer = document.getElementById('videoContainer');
+
             if (videoId) {
                 const videoUrl = `https://ytprro.jdx3.org/downloadmp4?url=https://www.youtube.com/watch?v=${videoId}`;
                 const posterUrl = `https://cors-proxy.cooks.fyi/https://i3.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
-                try {
-                    const response = await fetch(videoUrl, { method: 'HEAD' });
-                    if (response.ok) {
-                        videoContainer.innerHTML = `
-                            <video id="my-video" class="video-js" playsinline poster="${posterUrl}"  controls preload="auto" width="640" height="360">
-                                <source src="${videoUrl}" type="video/mp4">
-                                Your browser does not support the video tag.
-                            </video>
-                        `;
-                        // Initialize Video.js
-                        videojs('my-video');
-                    } else {
-                        throw new Error('Server error');
-                    }
-                } catch (error) {
-                    videoContainer.innerHTML = `
-                        <div class="error-message">
-                            <p>The server is being rate-limited or bot-blocked.</p>
-                            <button class="refresh-button" onclick="loadVideo()">Refresh Video</button>
-                        </div>
-                    `;
-                }
+
+                videoContainer.innerHTML = `
+                    <video id="my-video" class="video-js" playsinline poster="${posterUrl}" controls preload="auto" width="640" height="360">
+                        <source src="${videoUrl}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                `;
+
+                // Initialize Video.js immediately
+                videojs('my-video');
             } else {
                 videoContainer.innerHTML = '<p>Video not found.</p>';
             }
