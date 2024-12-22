@@ -84,6 +84,19 @@
                 // Initialize Video.js immediately
                 videojs('my-video');
             })
+             // Set media session metadata
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title: title,
+                        artist: 'YT SEARCH BY WTHISTHIS', // Replace with actual artist name if available
+                        album: 'YT SEARCH BY WTHISTHIS', // Replace with actual album name if available
+                        artwork: [
+                            { src: posterUrl, sizes: '512x512', type: 'image/png' },
+                            { src: posterUrl, sizes: '256x256', type: 'image/png' },
+                            { src: posterUrl, sizes: '128x128', type: 'image/png' }
+                        ]
+                    });
+                }
             .catch(error => {
                 console.error('Error fetching video info:', error);
                 videoContainer.innerHTML = '<p class="error-message">Video not found.</p>';
