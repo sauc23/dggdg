@@ -16,11 +16,6 @@
             text-align: center;
             margin-bottom: 20px;
         }
-        .search-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
         .item {
             display: flex;
             align-items: center;
@@ -89,17 +84,26 @@
                             <button class="btn btn-success" onclick="window.location.href='chn.html?id=${channelId}'">View</button>
                         </div>
                     `;
-                } else if (item.type === 'video') {
+                } else if (item.type === 'stream') {
                     const videoId = item.url.split('=')[1];
                     element.innerHTML = `
                         <img src="https://cors-proxy.cooks.fyi/${item.thumbnail}" alt="${item.title}">
                         <div class="info">
                             <h3>${item.title}</h3>
                             <p class="uploader">Uploaded by: ${item.uploaderName}</p>
-                            <p>Uploaded: ${item.uploadedDate}</p>
+                            <p>Uploaded: ${item.uploadedDate || 'Unknown'}</p>
                             <p>Views: ${item.views}</p>
                             <button class="btn btn-success" onclick="window.location.href='vid.html?id=${videoId}'">Watch (480P)</button>
                             <button class="btn btn-info" onclick="window.location.href='aud.html?id=${videoId}'">Listen (MP3)</button>
+                        </div>
+                    `;
+                } else if (item.type === 'playlist') {
+                    element.innerHTML = `
+                        <img src="https://cors-proxy.cooks.fyi/${item.thumbnail}" alt="${item.name}">
+                        <div class="info">
+                            <h3>${item.name}</h3>
+                            <p class="uploader">By: ${item.uploaderName}</p>
+                            <button class="btn btn-primary" onclick="window.location.href='ply.html?id=${item.url.split('=')[1]}'">View Playlist</button>
                         </div>
                     `;
                 }
