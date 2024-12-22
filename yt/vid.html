@@ -97,7 +97,7 @@
             const videoId = urlParams.get('id');
             const videoContainer = document.getElementById('videoContainer');
             if (videoId) {
-                const videoUrl = `https://ytprro.jdx3.org/video/${videoId}`;
+                const videoUrl = `https://ytprro.jdx3.org/downloadmp4?url=https://www.youtube.com/watch?v=${videoId}`;
                 const posterUrl = `https://cors-proxy.cooks.fyi/https://i3.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
                 try {
                     const response = await fetch(videoUrl, { method: 'HEAD' });
