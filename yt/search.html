@@ -97,18 +97,16 @@
                             <button class="btn btn-info" onclick="window.location.href='aud.html?id=${videoId}'">Listen (MP3)</button>
                         </div>
                     `;
-                }else if (item.type === 'playlist') {
-    const playlistId = item.url.split('list=')[1];
-    element.innerHTML = `
-        <img src="https://cors-proxy.cooks.fyi/${item.thumbnail}" alt="${item.name}">
-        <div class="info">
-            <h3>${item.name}</h3>
-            <p class="uploader">By: ${item.uploaderName}</p>
-            <button class="btn btn-primary" onclick="window.location.href='ply.html?id=${playlistId}'">View Playlist</button>
-        </div>
-    `;
-}
-
+                } else if (item.type === 'playlist') {
+                    const playlistId = item.url.split('list=')[1];
+                    element.innerHTML = `
+                        <img src="https://cors-proxy.cooks.fyi/${item.thumbnail}" alt="${item.name}">
+                        <div class="info">
+                            <h3>${item.name}</h3>
+                            <p class="uploader">By: ${item.uploaderName}</p>
+                            <button class="btn btn-primary" onclick="window.location.href='ply.html?id=${playlistId}'">View Playlist</button>
+                        </div>
+                    `;
                 }
 
                 resultsContainer.appendChild(element);
