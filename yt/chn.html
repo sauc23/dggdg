@@ -84,7 +84,10 @@
         const channelId = params.get('id');
     let isLoadingNextPage = false;
     let nextPageData = null;
-
+function searchVideos() {
+            const query = document.getElementById('searchQuery').value;
+            window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+        }
     function fetchNextPage() {
         if (isLoadingNextPage || !nextPageData) return;
 
