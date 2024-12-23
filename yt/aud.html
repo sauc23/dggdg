@@ -74,58 +74,68 @@ function loadAudio() {
 
         // Fetch audio information
         fetch(infoUrl)
-            .then(response => response.json())
-            .then(data => {
-                const videoDetails = data.videoDetails;
-                const title = videoDetails.title;
-                const description = videoDetails.shortDescription;
-                const thumbnails = videoDetails.thumbnail.thumbnails;
-                const posterUrl = thumbnails[thumbnails.length - 1]?.url || '';
-
-                // Update the audio container with title, description, thumbnail, and audio player
-                audioContainer.innerHTML = `
-                    <img src="${posterUrl}" alt="${title}" class="thumbnail">
-                    <audio controls crossorigin playsinline id="player" autoplay>
-                        <source src="${audioUrl}" type="audio/mp3">
-                        Your browser does not support the audio tag.
-                    </audio>
-                    <h2 id="audioTitle">${title}</h2>
-                    <p>${description}</p>
-                `;
-
-                // Initialize Plyr
-                const player = new Plyr('#player', {
-                    settings: ['play', 'mute', 'volume', 'fullscreen', 'download'],
-                    download: true,
-                });
-
-                // Set media session metadata
-                if ('mediaSession' in navigator) {
-                    navigator.mediaSession.metadata = new MediaMetadata({
-                        title: title,
-                        artist: videoDetails.author || 'Unknown Artist',
-                        album: 'YouTube Audio',
-                        artwork: thumbnails.map(thumbnail => ({
-                            src: thumbnail.url,
-                            sizes: `${thumbnail.width}x${thumbnail.height}`,
-                            type: 'image/png',
-                        })),
-                    });
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
                 }
+                return response.json();
+            })
+            .then(data => {
+                // Check if videoDetails exists
+                if (data.videoDetails) {
+                    const videoDetails = data.videoDetails;
+                    const title = videoDetails.title || 'Unknown Title';
+                    const description = videoDetails.shortDescription || 'No description available';
+                    const thumbnails = videoDetails.thumbnail.thumbnails || [];
+                    const posterUrl = thumbnails.length > 0 ? thumbnails[thumbnails.length - 1]?.url : '';
 
-                // Retry loading audio if it fails
-                player.on('error', () => {
-                    console.error('Audio failed to load, retrying...');
-                    setTimeout(() => {
-                        player.source = {
-                            type: 'audio',
-                            sources: [{
-                                src: audioUrl,
-                                type: 'audio/mp3',
-                            }],
-                        };
-                    }, 1000);
-                });
+                    // Update the audio container with title, description, thumbnail, and audio player
+                    audioContainer.innerHTML = `
+                        <img src="${posterUrl}" alt="${title}" class="thumbnail">
+                        <audio controls crossorigin playsinline id="player" autoplay>
+                            <source src="${audioUrl}" type="audio/mp3">
+                            Your browser does not support the audio tag.
+                        </audio>
+                        <h2 id="audioTitle">${title}</h2>
+                        <p>${description}</p>
+                    `;
+
+                    // Initialize Plyr
+                    const player = new Plyr('#player', {
+                        settings: ['play', 'mute', 'volume', 'fullscreen', 'download'],
+                        download: true,
+                    });
+
+                    // Set media session metadata
+                    if ('mediaSession' in navigator) {
+                        navigator.mediaSession.metadata = new MediaMetadata({
+                            title: title,
+                            artist: videoDetails.author || 'Unknown Artist',
+                            album: 'YouTube Audio',
+                            artwork: thumbnails.map(thumbnail => ({
+                                src: thumbnail.url,
+                                sizes: `${thumbnail.width}x${thumbnail.height}`,
+                                type: 'image/png',
+                            })),
+                        });
+                    }
+
+                    // Retry loading audio if it fails
+                    player.on('error', () => {
+                        console.error('Audio failed to load, retrying...');
+                        setTimeout(() => {
+                            player.source = {
+                                type: 'audio',
+                                sources: [{
+                                    src: audioUrl,
+                                    type: 'audio/mp3',
+                                }],
+                            };
+                        }, 1000);
+                    });
+                } else {
+                    throw new Error('Video details not found in response');
+                }
             })
             .catch(error => {
                 console.error('Error fetching audio info:', error);
@@ -139,7 +149,7 @@ function loadAudio() {
 // Load the audio when the page is loaded
 window.onload = loadAudio;
 
-    </script>
+</script>
 
 </body>
 </html>
