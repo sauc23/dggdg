@@ -71,20 +71,21 @@
     </div>
 
     <script>
-        // Fetch the channel ID from the URL
+       // Fetch the channel ID from the URL
         const params = new URLSearchParams(window.location.search);
         const channelId = params.get('id');
+    let isLoadingNextPage = false;
+    let nextPageData = null;
 
-        // Fetch channel data
-        fetch(`/ytapi/channel/${channelId}`)
+    function fetchNextPage() {
+        if (isLoadingNextPage || !nextPageData) return;
+
+        isLoadingNextPage = true;
+
+        fetch(`/ytapi/nextpage/channel/${channelId}?nextpage=${encodeURIComponent(JSON.stringify(nextPageData))}`)
             .then(response => response.json())
             .then(data => {
-                document.querySelector('.banner').style.backgroundImage = `url(https://cors-proxy.cooks.fyi/${data.bannerUrl})`;
-                document.querySelector('.avatar').src = `https://cors-proxy.cooks.fyi/${data.avatarUrl}`;
-                document.querySelector('.channel-name').textContent = data.name;
-                document.querySelector('#subscribers').textContent = `${data.subscriberCount.toLocaleString()} subscribers`;
-                document.querySelector('.description').textContent = data.description || "No description available.";
-
+                // Append new related streams
                 const relatedStreams = document.querySelector('.related-streams');
                 data.relatedStreams.forEach(stream => {
                     const col = document.createElement('div');
@@ -102,8 +103,59 @@
                     `;
                     relatedStreams.appendChild(col);
                 });
+
+                // Update nextPageData
+                nextPageData = data.nextpage ? JSON.parse(data.nextpage) : null;
+                isLoadingNextPage = false;
             })
-            .catch(err => console.error("Error fetching channel data:", err));
-    </script>
+            .catch(err => {
+                console.error("Error fetching next page data:", err);
+                isLoadingNextPage = false;
+            });
+    }
+
+    // Listen for scroll events to trigger next page loading
+    window.addEventListener('scroll', () => {
+        const scrollThreshold = document.body.scrollHeight - window.innerHeight - 200;
+
+        if (window.scrollY > scrollThreshold) {
+            fetchNextPage();
+        }
+    });
+
+    // Initial channel data fetch
+    fetch(`/ytapi/channel/${channelId}`)
+        .then(response => response.json())
+        .then(data => {
+            document.querySelector('.banner').style.backgroundImage = `url(https://cors-proxy.cooks.fyi/${data.bannerUrl})`;
+            document.querySelector('.avatar').src = `https://cors-proxy.cooks.fyi/${data.avatarUrl}`;
+            document.querySelector('.channel-name').textContent = data.name;
+            document.querySelector('#subscribers').textContent = `${data.subscriberCount.toLocaleString()} subscribers`;
+            document.querySelector('.description').textContent = data.description || "No description available.";
+
+            const relatedStreams = document.querySelector('.related-streams');
+            data.relatedStreams.forEach(stream => {
+                const col = document.createElement('div');
+                col.className = 'col-md-3 mb-4';
+                const videoId = new URLSearchParams(stream.url.split('?')[1]).get('v');
+                col.innerHTML = `
+                    <div class="card">
+                        <img src="https://cors-proxy.cooks.fyi/${stream.thumbnail}" class="card-img-top" alt="${stream.title}">
+                        <div class="card-body">
+                            <h5 class="card-title">${stream.title}</h5>
+                            <p class="card-text text-muted">${stream.uploaderName}</p>
+                            <a href="vid.html?id=${videoId}" class="btn btn-primary btn-sm">Watch</a>
+                        </div>
+                    </div>
+                `;
+                relatedStreams.appendChild(col);
+            });
+
+            // Store initial nextPageData
+            nextPageData = data.nextpage ? JSON.parse(data.nextpage) : null;
+        })
+        .catch(err => console.error("Error fetching channel data:", err));
+</script>
+
 </body>
 </html>
