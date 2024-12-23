@@ -51,8 +51,8 @@
         fetch(`/ytapi/channel/${channelId}`)
             .then(response => response.json())
             .then(data => {
-                document.querySelector('.banner').style.backgroundImage = `url(${data.bannerUrl})`;
-                document.querySelector('.avatar').src = data.avatarUrl;
+                document.querySelector('.banner').style.backgroundImage = `url(https://cors-proxy.cooks.fyi/${data.bannerUrl})`;
+                document.querySelector('.avatar').src = `https://cors-proxy.cooks.fyi/${data.avatarUrl}`;
                 document.querySelector('.channel-name').textContent = data.name;
                 document.querySelector('#subscribers').textContent = `${data.subscriberCount.toLocaleString()} subscribers`;
                 document.querySelector('.description').textContent = data.description || "No description available.";
@@ -63,7 +63,7 @@
                     col.className = 'col-md-3 mb-4';
                     col.innerHTML = `
                         <div class="card">
-                            <img src="${stream.thumbnail}" class="card-img-top" alt="${stream.title}">
+                            <img src="https://cors-proxy.cooks.fyi/${stream.thumbnail}" class="card-img-top" alt="${stream.title}">
                             <div class="card-body">
                                 <h5 class="card-title">${stream.title}</h5>
                                 <p class="card-text text-muted">${stream.uploaderName}</p>
