@@ -49,9 +49,17 @@
             background-color: #0056b3;
             border-color: #0056b3;
         }
+     .search-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
+     <div class="search-container mb-4">
+            <input type="text" id="searchQuery" class="form-control me-2" placeholder="Search for videos...">
+            <button class="btn btn-primary" onclick="searchVideos()">Search</button>
     <div class="container mt-4">
         <div class="banner mb-3"></div>
         <div class="text-center">
@@ -68,7 +76,10 @@
         // Fetch the playlist ID from the URL
         const params = new URLSearchParams(window.location.search);
         const playlistId = params.get('id');
-
+function searchVideos() {
+            const query = document.getElementById('searchQuery').value;
+            window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+        }
         // Fetch playlist data
         fetch(`/ytapi/playlists/${playlistId}`)
             .then(response => response.json())
