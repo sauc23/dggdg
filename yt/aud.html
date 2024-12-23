@@ -69,17 +69,18 @@ function loadAudio() {
     const audioContainer = document.getElementById('audioContainer');
 
     if (audioId) {
-        const audioUrl = `/ytprx/audio/${audioId}.mp3`; // Assuming audio files are in mp3 format
-        const infoUrl = `/ytprx/info/${audioId}.json`; // Fetch audio info
-        const posterUrl = `/ytth/vi/${audioId}/hqdefault.jpg`;
+        const audioUrl = `/ytprx/audio/${audioId}.mp3`;
+        const infoUrl = `/ytprx/info/${audioId}.json`;
 
         // Fetch audio information
         fetch(infoUrl)
             .then(response => response.json())
             .then(data => {
-                const snippet = data.data.snippet;
-                const title = snippet.title;
-                const description = snippet.description;
+                const videoDetails = data.videoDetails;
+                const title = videoDetails.title;
+                const description = videoDetails.shortDescription;
+                const thumbnails = videoDetails.thumbnail.thumbnails;
+                const posterUrl = thumbnails[thumbnails.length - 1]?.url || '';
 
                 // Update the audio container with title, description, thumbnail, and audio player
                 audioContainer.innerHTML = `
@@ -90,26 +91,25 @@ function loadAudio() {
                     </audio>
                     <h2 id="audioTitle">${title}</h2>
                     <p>${description}</p>
-                    
                 `;
 
                 // Initialize Plyr
                 const player = new Plyr('#player', {
                     settings: ['play', 'mute', 'volume', 'fullscreen', 'download'],
-                    download: true // Enable download button
+                    download: true,
                 });
 
                 // Set media session metadata
                 if ('mediaSession' in navigator) {
                     navigator.mediaSession.metadata = new MediaMetadata({
                         title: title,
-                        artist: 'YT SEARCH BY WTHISTHIS', // Replace with actual artist name if available
-                        album: 'YT SEARCH BY WTHISTHIS', // Replace with actual album name if available
-                        artwork: [
-                            { src: posterUrl, sizes: '512x512', type: 'image/png' },
-                            { src: posterUrl, sizes: '256x256', type: 'image/png' },
-                            { src: posterUrl, sizes: '128x128', type: 'image/png' }
-                        ]
+                        artist: videoDetails.author || 'Unknown Artist',
+                        album: 'YouTube Audio',
+                        artwork: thumbnails.map(thumbnail => ({
+                            src: thumbnail.url,
+                            sizes: `${thumbnail.width}x${thumbnail.height}`,
+                            type: 'image/png',
+                        })),
                     });
                 }
 
@@ -124,7 +124,7 @@ function loadAudio() {
                                 type: 'audio/mp3',
                             }],
                         };
-                    }, 1000); // Retry after 1 second
+                    }, 1000);
                 });
             })
             .catch(error => {
