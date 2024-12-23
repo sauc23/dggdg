@@ -66,9 +66,9 @@ function loadVideo() {
         fetch(infoUrl)
             .then(response => response.json())
             .then(data => {
-                const videoDetails = data.videoDetails;
-                const title = videoDetails.title;
-                const description = videoDetails.shortDescription;
+                const title = data.title;
+                const description = data.description;
+                const author = data.author;
 
                 // Update the video container with title, description, and video player
                 videoContainer.innerHTML = `
@@ -77,6 +77,7 @@ function loadVideo() {
                         Your browser does not support the video tag.
                     </video>
                     <h2>${title}</h2>
+                    <h4>Author: ${author}</h4>
                     <h4>Info:</h4>
                     <p>${description}</p>
                 `;
@@ -88,7 +89,7 @@ function loadVideo() {
                 if ('mediaSession' in navigator) {
                     navigator.mediaSession.metadata = new MediaMetadata({
                         title: title,
-                        artist: videoDetails.author || 'Unknown Artist',
+                        artist: author || 'Unknown Artist',
                         album: 'YouTube Video',
                         artwork: [
                             { src: posterUrl, sizes: '512x512', type: 'image/png' },
@@ -109,6 +110,7 @@ function loadVideo() {
 
 // Load the video when the page is loaded
 window.onload = loadVideo;
+
 
 
     </script>
