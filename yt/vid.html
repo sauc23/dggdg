@@ -66,9 +66,9 @@ function loadVideo() {
         fetch(infoUrl)
             .then(response => response.json())
             .then(data => {
-                const snippet = data.data.snippet;
-                const title = snippet.title;
-                const description = snippet.description;
+                const videoDetails = data.videoDetails;
+                const title = videoDetails.title;
+                const description = videoDetails.shortDescription;
 
                 // Update the video container with title, description, and video player
                 videoContainer.innerHTML = `
@@ -88,8 +88,8 @@ function loadVideo() {
                 if ('mediaSession' in navigator) {
                     navigator.mediaSession.metadata = new MediaMetadata({
                         title: title,
-                        artist: 'YT SEARCH BY WTHISTHIS', // Replace with actual artist name if available
-                        album: 'YT SEARCH BY WTHISTHIS', // Replace with actual album name if available
+                        artist: videoDetails.author || 'Unknown Artist',
+                        album: 'YouTube Video',
                         artwork: [
                             { src: posterUrl, sizes: '512x512', type: 'image/png' },
                             { src: posterUrl, sizes: '256x256', type: 'image/png' },
@@ -109,6 +109,7 @@ function loadVideo() {
 
 // Load the video when the page is loaded
 window.onload = loadVideo;
+
 
     </script>
 
