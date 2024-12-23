@@ -53,47 +53,48 @@
             window.location.href = `search.html?q=${encodeURIComponent(query)}`;
         }
 
-   function loadVideo() {
-    const videoId = urlParams.get('id');
-    const videoContainer = document.getElementById('videoContainer');
+    function loadVideo() {
+        const videoId = urlParams.get('id');
+        const videoContainer = document.getElementById('videoContainer');
 
-    if (videoId) {
-        const videoUrl = `/ytprx/video/${videoId}.mp4`;
-        const posterUrl = `/ytth/vi/${audioId}/hqdefault.jpg`;
-        const infoUrl = `/ytprx/info/${videoId}.json`;
+        if (videoId) {
+            const videoUrl = `/ytprx/video/${videoId}.mp4`;
+            const infoUrl = `/ytprx/info/${videoId}.json`;
 
-        // Fetch video information
-        fetch(infoUrl)
-            .then(response => response.json())
-            .then(data => {
-                const snippet = data.data.snippet;
-                const title = snippet.title;
-                const description = snippet.description;
+            // Fetch video information
+            fetch(infoUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const videoDetails = data.videoDetails;
+                    const title = videoDetails.title;
+                    const description = videoDetails.shortDescription;
+                    const thumbnails = videoDetails.thumbnail.thumbnails;
+                    const posterUrl = thumbnails[thumbnails.length - 1]?.url || '';
 
-                // Update the video container with title, description, and video player
-                videoContainer.innerHTML = `
-                    <h2>${title}</h2>
-                    <p>${description}</p>
-                    <video id="my-video" class="video-js" playsinline poster="${posterUrl}" controls preload="auto" width="640" height="360">
-                        <source src="${videoUrl}" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                `;
+                    // Update the video container with title, description, and video player
+                    videoContainer.innerHTML = `
+                        <h2>${title}</h2>
+                        <p>${description}</p>
+                        <video id="my-video" class="video-js" playsinline poster="${posterUrl}" controls preload="auto" width="640" height="360">
+                            <source src="${videoUrl}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    `;
 
-                // Initialize Video.js immediately
-                videojs('my-video');
-            })
-            .catch(error => {
-                console.error('Error fetching video info:', error);
-                videoContainer.innerHTML = '<p class="error-message">Video not found.</p>';
-            });
-    } else {
-        videoContainer.innerHTML = '<p class="error-message">Video not found.</p>';
+                    // Initialize Video.js immediately
+                    videojs('my-video');
+                })
+                .catch(error => {
+                    console.error('Error fetching video info:', error);
+                    videoContainer.innerHTML = '<p class="error-message">Video not found.</p>';
+                });
+        } else {
+            videoContainer.innerHTML = '<p class="error-message">Video not found.</p>';
+        }
     }
-}
 
-        // Load the video when the page is loaded
-        window.onload = loadVideo;
+    // Load the video when the page is loaded
+    window.onload = loadVideo;
     </script>
 
 </body>
