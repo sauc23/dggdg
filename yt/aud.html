@@ -82,6 +82,7 @@ function loadAudio() {
             })
             .then(data => {
                 const title = data.title || 'Unknown Title';
+                const channel = data.channel || 'Channel Not available';
                 const description = data.description || 'No description available';
                 const author = data.author || 'Unknown Artist';
                 const posterUrl = `https://cors-proxy.cooks.fyi/https://i3.ytimg.com/vi/${audioId}/maxresdefault.jpg`;
@@ -94,7 +95,7 @@ function loadAudio() {
                         Your browser does not support the audio tag.
                     </audio>
                     <h2 id="audioTitle">${title}</h2>
-                    <h4>Author: ${author}</h4>
+                    <h4>Author: <a href="chn.html?id=${channel}">${author}</a></h4>
                     <p>${description}</p>
                 `;
 
