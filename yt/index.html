@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,6 +15,7 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
+            padding: 20px;
         }
         h1 {
             margin-bottom: 20px;
@@ -25,7 +25,12 @@
             margin-bottom: 30px;
             max-width: 600px;
         }
-        .start-button {
+        .button-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .button {
             padding: 15px 30px;
             background-color: #1e88e5;
             color: white;
@@ -34,6 +39,23 @@
             cursor: pointer;
             font-size: 16px;
             text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #1565c0;
+        }
+        .changelog {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 5px;
+            max-width: 600px;
+            text-align: left;
+        }
+        .changelog h2 {
+            margin-top: 0;
+        }
+        .works, .not-working {
+            margin: 10px 0;
         }
     </style>
 </head>
@@ -42,9 +64,36 @@
     <h1>Welcome to the YouTube Video Search App</h1>
     <p>
         This application allows you to search for YouTube videos easily. 
-        Simply click the button below to start searching for your favorite videos!
+        Use the buttons below to either enter a video URL or search for your favorite videos!
     </p>
-    <a class="start-button" href="search.html">Start Searching</a>
+    
+    <div class="button-container">
+        <a class="button" href="enter-url.html">Enter URL</a>
+        <a class="button" href="search.html">Search</a>
+    </div>
+
+    <div class="changelog">
+        <h2>Changelog</h2>
+        <div class="works">
+            <strong>Works:</strong>
+            <ul>
+                <li>Videos and audio work</li>
+                <li>Channels work</li>
+                <li>Playlists work</li>
+            </ul>
+        </div>
+        <div class="not-working">
+            <strong>Not Working:</strong>
+            <ul>
+                <li>Higher quality videos (limited to 360p for now)</li>
+                <li>Some regional videos (server is located in Frankfurt, Germany; US server coming soon)</li>
+                <li>Age-restricted videos (audio works somehow)</li>
+                <li>Playlist page has a bug for some playlists</li>
+                <li>Description is buggy</li>
+                <li>No comments</li>
+            </ul>
+        </div>
+    </div>
 
 </body>
 </html>
