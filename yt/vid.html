@@ -91,7 +91,8 @@
             document.getElementById('serverSwitcher').value = serverPreference;
 
             if (videoId) {
-                const baseUrl = serverPreference === 'us' ? `/ytprx/video-us/` : 'au' ? `/ytprx/video-au/` : `/ytprx/video/`;
+               const baseUrl = serverPreference === 'us' ? '/ytprx/video-us/' : serverPreference === 'au' ? '/ytprx/video-au/' : '/ytprx/video/';
+
                 const videoUrl = `${baseUrl}${videoId}.mp4`;
                 const posterUrl = `https://cors-proxy.cooks.fyi/https://i3.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
                 const infoUrl = `/ytprx/info/${videoId}.json`;
