@@ -103,7 +103,8 @@
             document.getElementById('serverSwitcher').value = serverPreference;
 
             if (audioId) {
-                const baseUrl = serverPreference === 'us' ? `/ytprx/audio-us/` : 'au' ? `/ytprx/audio-au/` : `/ytprx/audio/`;
+               const baseUrl = serverPreference === 'us' ? '/ytprx/audio-us/' : serverPreference === 'au' ? '/ytprx/audio-au/' : '/ytprx/audio/';
+
                 const audioUrl = `${baseUrl}${audioId}.mp3`;
                 const infoUrl = `/ytprx/info/${audioId}.json`;
 
