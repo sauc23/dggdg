@@ -67,7 +67,7 @@
             <select id="serverSwitcher" class="form-select w-auto" onchange="updateServerPreference()">
                 <option value="default">Server 1 [FRANKFURT, DE]</option>
                 <option value="us">Server 2 [FLORIDA, USA]</option>
-                <option value="au">Server 3 [AUSTRALIA]</option>
+                 <option value="au">Server 3 [CANBERRA, AUSTRAILA]</option>
             </select>
         </div>
 
@@ -103,20 +103,7 @@
             document.getElementById('serverSwitcher').value = serverPreference;
 
             if (audioId) {
-                const serverPreference = getCookie('serverPreference') || 'default';
-
-let baseUrl;
-switch (serverPreference) {
-    case 'us':
-        baseUrl = `/ytprx/audio-us/`;
-        break;
-    case 'au':
-        baseUrl = `/ytprx/audio-au/`;
-        break;
-    default:
-        baseUrl = `/ytprx/audio/`;
-}
-
+                const baseUrl = serverPreference === 'us' ? `/ytprx/audio-us/` : 'au' ? `/ytprx/audio-au/` : `/ytprx/audio/`;
                 const audioUrl = `${baseUrl}${audioId}.mp3`;
                 const infoUrl = `/ytprx/info/${audioId}.json`;
 
