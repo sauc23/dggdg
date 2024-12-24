@@ -28,6 +28,15 @@
         #videoContainer {
             text-align: center;
         }
+        .options-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .server-label {
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -38,17 +47,35 @@
             <input type="text" id="searchQuery" class="form-control me-2" placeholder="Search for videos...">
             <button class="btn btn-primary" onclick="searchVideos()">Search</button>
         </div>
-   <h4>Note: Enjoy this while it lasts, as YouTube frequently blocks servers like Invidious, and these servers may stop working at any moment.</h4>
+        <h4>Note: Enjoy this while it lasts, as YouTube frequently blocks servers like Invidious, and these servers may stop working at any moment.</h4>
         <div class="video-container" id="videoContainer">
             <!-- JW Player will be embedded here -->
         </div>
-
-        <a class="btn btn-secondary d-block mx-auto" href="search.html">Back to Search</a>
+        <div class="options-container">
+            <span class="server-label">Select Server:</span>
+            <select id="serverSwitcher" class="form-select w-auto" onchange="updateServerPreference()">
+                <option value="default">Server 1 [FRANKFURT, DE]</option>
+                <option value="us">Server 2 [FLORIDA, USA]</option>
+            </select>
+        </div>
+        <a class="btn btn-secondary d-block mx-auto mt-4" href="search.html">Back to Search</a>
     </div>
 
     <script src="https://content.jwplatform.com/libraries/IDzF9Zmk.js"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
+
+        function setCookie(name, value, days) {
+            const d = new Date();
+            d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = `${name}=${value};expires=${d.toUTCString()};path=/`;
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
 
         function searchVideos() {
             const query = document.getElementById('searchQuery').value;
@@ -58,13 +85,16 @@
         function loadVideo() {
             const videoId = urlParams.get('id');
             const videoContainer = document.getElementById('videoContainer');
+            const serverPreference = getCookie('server') || 'default';
+
+            document.getElementById('serverSwitcher').value = serverPreference;
 
             if (videoId) {
-                const videoUrl = `/ytprx/video/${videoId}.mp4`;
+                const baseUrl = serverPreference === 'us' ? `/ytprx/video-us/` : `/ytprx/video/`;
+                const videoUrl = `${baseUrl}${videoId}.mp4`;
                 const posterUrl = `https://cors-proxy.cooks.fyi/https://i3.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
                 const infoUrl = `/ytprx/info/${videoId}.json`;
 
-                // Fetch video information
                 fetch(infoUrl)
                     .then(response => response.json())
                     .then(data => {
@@ -73,7 +103,6 @@
                         const description = data.description;
                         const author = data.author;
 
-                        // Update the video container with title, description, and video player
                         videoContainer.innerHTML = `
                             <div id="jwplayer-container"></div>
                             <h2>${title}</h2>
@@ -82,7 +111,6 @@
                             <p>${description}</p>
                         `;
 
-                        // Initialize JW Player
                         jwplayer("jwplayer-container").setup({
                             file: videoUrl,
                             image: posterUrl,
@@ -91,7 +119,6 @@
                             autostart: true
                         });
 
-                        // Set media session metadata
                         if ('mediaSession' in navigator) {
                             navigator.mediaSession.metadata = new MediaMetadata({
                                 title: title,
@@ -114,7 +141,12 @@
             }
         }
 
-        // Load the video when the page is loaded
+        function updateServerPreference() {
+            const server = document.getElementById('serverSwitcher').value;
+            setCookie('server', server, 30);
+            loadVideo();
+        }
+
         window.onload = loadVideo;
     </script>
 
