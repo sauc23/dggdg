@@ -44,6 +44,13 @@
         .info .uploader {
             font-weight: bold;
         }
+        .search-container {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: #121212;
+            padding-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -55,20 +62,26 @@
             <button class="btn btn-primary" onclick="searchVideos()">Search</button>
         </div>
         <div id="results"></div>
+        <div id="loading" class="text-center" style="display: none;">
+            <button class="btn btn-primary">Loading...</button>
+        </div>
     </div>
 
     <script>
+        let nextPageUrl = null;
+        let currentQuery = '';
+
         async function searchVideos() {
             const query = document.getElementById('searchQuery').value;
+            currentQuery = query; // Store the current query
             const response = await fetch(`/ytapi/search?q=${encodeURIComponent(query)}&filter=all`);
             const data = await response.json();
+            nextPageUrl = data.nextpage ? data.nextpage : null; // Set the next page URL
             displayResults(data.items);
         }
 
         function displayResults(items) {
             const resultsContainer = document.getElementById('results');
-            resultsContainer.innerHTML = ''; // Clear previous results
-
             items.forEach(item => {
                 const element = document.createElement('div');
                 element.className = 'item';
@@ -112,6 +125,25 @@
                 resultsContainer.appendChild(element);
             });
         }
+
+        async function loadMoreResults() {
+            if (!nextPageUrl) return;
+
+            const response = await fetch(`/ytapi/nextpage/search?nextpage=${encodeURIComponent(nextPageUrl)}&q=${encodeURIComponent(currentQuery)}&filter=all`);
+            const data = await response.json();
+            nextPageUrl = data.nextpage ? data.nextpage : null; // Update the next page URL
+            displayResults(data.items);
+        }
+
+        // Detect when the user scrolls to the bottom and load more results
+        window.onscroll = function() {
+            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+                if (nextPageUrl) {
+                    loadMoreResults();
+                    document.getElementById('loading').style.display = 'block'; // Show loading indicator
+                }
+            }
+        };
 
         // Function to get query parameter from URL
         function getQueryParameter(name) {
