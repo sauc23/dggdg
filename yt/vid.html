@@ -96,13 +96,13 @@
 let baseUrl;
 switch (serverPreference) {
     case 'us':
-        baseUrl = `/ytprx/audio-us/`;
+        baseUrl = `/ytprx/video-us/`;
         break;
     case 'au':
-        baseUrl = `/ytprx/audio-au/`;
+        baseUrl = `/ytprx/video-au/`;
         break;
     default:
-        baseUrl = `/ytprx/audio/`;
+        baseUrl = `/ytprx/video/`;
 }
 
                 const videoUrl = `${baseUrl}${videoId}.mp4`;
