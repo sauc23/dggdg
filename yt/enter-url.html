@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter YouTube URL</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        form {
+            margin-bottom: 30px;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 300px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .submit-button {
+            padding: 10px 20px;
+            background-color: #1e88e5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .button-container {
+            display: none; /* Initially hidden */
+            margin-top: 20px;
+        }
+        .button {
+            padding: 15px 30px;
+            background-color: #1e88e5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #1565c0;
+        }
+    </style>
+    <script>
+        function showButtons(videoId) {
+            document.getElementById('button-container').style.display = 'block';
+            document.getElementById('watch-button').href = 'vid.html?id=' + videoId;
+            document.getElementById('listen-button').href = 'aud.html?id=' + videoId;
+        }
+
+        function handleSubmit(event) {
+            event.preventDefault();
+            const urlInput = document.getElementById('youtube-url').value;
+            const videoId = extractVideoId(urlInput);
+            if (videoId) {
+                showButtons(videoId);
+            } else {
+                alert('Please enter a valid YouTube URL.');
+            }
+        }
+
+        function extractVideoId(url) {
+            const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+            const match = url.match(regex);
+            return match ? match[1] : null;
+        }
+    </script>
+</head>
+<body>
+
+    <h1>Enter YouTube URL</h1>
+    <form onsubmit="handleSubmit(event)">
+        <input type="text" id="youtube-url" placeholder="Enter YouTube URL" required>
+        <button type="submit" class="submit-button">Submit</button>
+    </form>
+
+    <div id="button-container" class="button-container">
+        <a id="watch-button" class="button">Watch (360p)</a>
+        <a id="listen-button" class="button">Listen</a>
+    </div>
+
+</body>
+</html>
