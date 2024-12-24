@@ -56,6 +56,7 @@
             <select id="serverSwitcher" class="form-select w-auto" onchange="updateServerPreference()">
                 <option value="default">Server 1 [FRANKFURT, DE]</option>
                 <option value="us">Server 2 [FLORIDA, USA]</option>
+                <option value="au">Server 3 [AUSTRALIA]</option>
             </select>
         </div>
         <a class="btn btn-secondary d-block mx-auto mt-4" href="search.html">Back to Search</a>
@@ -90,7 +91,20 @@
             document.getElementById('serverSwitcher').value = serverPreference;
 
             if (videoId) {
-                const baseUrl = serverPreference === 'us' ? `/ytprx/video-us/` : `/ytprx/video/`;
+                              const serverPreference = getCookie('serverPreference') || 'default';
+
+let baseUrl;
+switch (serverPreference) {
+    case 'us':
+        baseUrl = `/ytprx/audio-us/`;
+        break;
+    case 'au':
+        baseUrl = `/ytprx/audio-au/`;
+        break;
+    default:
+        baseUrl = `/ytprx/audio/`;
+}
+
                 const videoUrl = `${baseUrl}${videoId}.mp4`;
                 const posterUrl = `https://cors-proxy.cooks.fyi/https://i3.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
                 const infoUrl = `/ytprx/info/${videoId}.json`;
