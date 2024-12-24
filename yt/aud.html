@@ -107,18 +107,25 @@ function loadAudio() {
                 });
 
                 // Set media session metadata
-                if ('mediaSession' in navigator) {
-                    navigator.mediaSession.metadata = new MediaMetadata({
-                        title: title,
-                        artist: author,
-                        album: 'YouTube Audio',
-                        artwork: [
-                            { src: posterUrl, sizes: '512x512', type: 'image/png' },
-                            { src: posterUrl, sizes: '256x256', type: 'image/png' },
-                            { src: posterUrl, sizes: '128x128', type: 'image/png' }
-                        ]
-                    });
-                }
+               if ('mediaSession' in navigator) {
+    const mediaMetadata = new MediaMetadata({
+        title: title,
+        artist: author,
+        album: 'YouTube Audio',
+        artwork: [
+            { src: posterUrl, sizes: '512x512', type: 'image/png' },
+            { src: posterUrl, sizes: '256x256', type: 'image/png' },
+            { src: posterUrl, sizes: '128x128', type: 'image/png' }
+        ]
+    });
+
+    navigator.mediaSession.metadata = mediaMetadata;
+
+    // Optional: Add media session action handlers
+    navigator.mediaSession.setActionHandler('play', () => player.play());
+    navigator.mediaSession.setActionHandler('pause', () => player.pause());
+}
+
 
                 // Retry loading audio if it fails
                 player.on('error', () => {
