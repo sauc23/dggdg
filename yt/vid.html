@@ -82,65 +82,72 @@
             window.location.href = `search.html?q=${encodeURIComponent(query)}`;
         }
 
-        function loadVideo() {
-            const videoId = urlParams.get('id');
-            const videoContainer = document.getElementById('videoContainer');
-            const serverPreference = getCookie('server') || 'default';
+       function loadVideo() {
+    const videoId = urlParams.get('id');
+    const videoContainer = document.getElementById('videoContainer');
+    const serverPreference = getCookie('server') || 'default';
 
-            document.getElementById('serverSwitcher').value = serverPreference;
+    document.getElementById('serverSwitcher').value = serverPreference;
 
-            if (videoId) {
-               const baseUrl = serverPreference === 'us' ? '/ytprx/video-us/' : serverPreference === 'au' ? '/ytprx/video-au/' : '/ytprx/video/';
+    if (videoId) {
+        const baseUrl = serverPreference === 'us' ? '/ytprx/video-us/' : serverPreference === 'au' ? '/ytprx/video-au/' : '/ytprx/video/';
+        const videoUrl = `${baseUrl}${videoId}.mp4`;
+        const posterUrl = `https://cors-proxy.cooks.fyi/https://i3.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
+        const infoUrl = `/ytprx/info/${videoId}.json`;
 
-                const videoUrl = `${baseUrl}${videoId}.mp4`;
-                const posterUrl = `https://cors-proxy.cooks.fyi/https://i3.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
-                const infoUrl = `/ytprx/info/${videoId}.json`;
+        fetch(infoUrl)
+            .then(response => response.json())
+            .then(data => {
+                const title = data.title;
+                const channel = data.channel || 'Channel Not available';
+                const description = data.description;
+                const author = data.author;
 
-                fetch(infoUrl)
-                    .then(response => response.json())
-                    .then(data => {
-                        const title = data.title;
-                        const channel = data.channel || 'Channel Not available';
-                        const description = data.description;
-                        const author = data.author;
+                videoContainer.innerHTML = `
+                    <div id="jwplayer-container"></div>
+                    <h2>${title}</h2>
+                    <h4>Author: <a href="chn.html?id=${channel}">${author}</a></h4>
+                    <h4>Info:</h4>
+                    <p>${description}</p>
+                    <iframe 
+                        src="com.html?id=${videoId}" 
+                        width="100%" 
+                        height="400" 
+                        style="border: none; margin-top: 20px;" 
+                        title="Comments Section">
+                    </iframe>
+                `;
 
-                        videoContainer.innerHTML = `
-                            <div id="jwplayer-container"></div>
-                            <h2>${title}</h2>
-                            <h4>Author: <a href="chn.html?id=${channel}">${author}</a></h4>
-                            <h4>Info:</h4>
-                            <p>${description}</p>
-                        `;
+                jwplayer("jwplayer-container").setup({
+                    file: videoUrl,
+                    image: posterUrl,
+                    width: "640",
+                    height: "360",
+                    autostart: true
+                });
 
-                        jwplayer("jwplayer-container").setup({
-                            file: videoUrl,
-                            image: posterUrl,
-                            width: "640",
-                            height: "360",
-                            autostart: true
-                        });
-
-                        if ('mediaSession' in navigator) {
-                            navigator.mediaSession.metadata = new MediaMetadata({
-                                title: title,
-                                artist: author || 'Unknown Artist',
-                                album: 'YouTube Video',
-                                artwork: [
-                                    { src: posterUrl, sizes: '512x512', type: 'image/png' },
-                                    { src: posterUrl, sizes: '256x256', type: 'image/png' },
-                                    { src: posterUrl, sizes: '128x128', type: 'image/png' }
-                                ]
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching video info:', error);
-                        videoContainer.innerHTML = '<p class="error-message">Video not found.</p>';
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title: title,
+                        artist: author || 'Unknown Artist',
+                        album: 'YouTube Video',
+                        artwork: [
+                            { src: posterUrl, sizes: '512x512', type: 'image/png' },
+                            { src: posterUrl, sizes: '256x256', type: 'image/png' },
+                            { src: posterUrl, sizes: '128x128', type: 'image/png' }
+                        ]
                     });
-            } else {
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching video info:', error);
                 videoContainer.innerHTML = '<p class="error-message">Video not found.</p>';
-            }
-        }
+            });
+    } else {
+        videoContainer.innerHTML = '<p class="error-message">Video not found.</p>';
+    }
+}
+
 
         function updateServerPreference() {
             const server = document.getElementById('serverSwitcher').value;
