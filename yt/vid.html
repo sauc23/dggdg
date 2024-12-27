@@ -12,6 +12,19 @@
             font-family: Arial, sans-serif;
             padding: 20px;
         }
+        .jwplayer-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full viewport height */
+    background-color: #121212; /* Optional: background color for the container */
+}
+.jwplayer {
+    max-width: 640px; /* Set a max width for the player */
+    width: 100%; /* Make it responsive */
+    height: auto; /* Maintain aspect ratio */
+}
+
         h1 {
             text-align: center;
             margin-bottom: 20px;
@@ -119,13 +132,15 @@
                             </iframe>
                         `;
 
-                        jwplayer("jwplayer-container").setup({
-                            file: videoUrl,
-                            image: posterUrl,
-                            width: "640",
-                            height: "360",
-                            autostart: true
-                        });
+                        jwplayer("myPlayer").setup({
+    file: "https://example.com/video.mp4",
+    image: "https://example.com/thumbnail.jpg",
+    width: "100%",
+    aspectratio: "16:9",
+       cast: {}, // This enables the cast functionality
+        airplay: true                                             
+});
+
 
                         if ('mediaSession' in navigator) {
                             navigator.mediaSession.metadata = new MediaMetadata({
