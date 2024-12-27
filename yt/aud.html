@@ -71,8 +71,6 @@
 
         <iframe id="commentsSection" src="" title="Comments Section"></iframe>
 
-
-
         <a class="btn btn-secondary d-block mx-auto mt-4" href="search.html">Back to Search</a>
     </div>
 
@@ -103,11 +101,8 @@
             const commentsIframe = document.getElementById('commentsSection');
             const serverPreference = getCookie('server') || 'default';
 
-            document.getElementById('serverSwitcher').value = serverPreference;
-
             if (audioId) {
-               const baseUrl = serverPreference === 'us' ? '/ytprx/audio-us/' : serverPreference === 'au' ? '/ytprx/audio-au/' : '/ytprx/audio/';
-
+                const baseUrl = serverPreference === 'us' ? '/ytprx/audio-us/' : serverPreference === 'au' ? '/ytprx/audio-au/' : '/ytprx/audio/';
                 const audioUrl = `${baseUrl}${audioId}.mp3`;
                 const infoUrl = `/ytprx/info/${audioId}.json`;
 
@@ -115,7 +110,7 @@
                     .then(response => response.json())
                     .then(data => {
                         const title = data.title || 'Unknown Title';
-                        const channel = data.channel || 'Channel Not available';
+                        const channel = data.channel || 'Channel Not Available';
                         const description = data.description || 'No description available';
                         const author = data.author || 'Unknown Artist';
                         const posterUrl = `https://cors-proxy.cooks.fyi/https://i3.ytimg.com/vi/${audioId}/maxresdefault.jpg`;
@@ -129,13 +124,13 @@
                             <h2 id="audioTitle">${title}</h2>
                             <h4>Author: <a href="chn.html?id=${channel}">${author}</a></h4>
                             <p>${description}</p>
-                                   <div class="options-container">
-            <span class="server-label">Select Server:</span>
-            <select id="serverSwitcher" class="form-select w-auto" onchange="updateServerPreference()">
-                <option value="default">Server 1 [FRANKFURT, DE]</option>
-                <option value="us">Server 2 [FLORIDA, USA]</option>
-            </select>
-        </div>
+                            <div class="options-container">
+                                <span class="server-label">Select Server:</span>
+                                <select id="serverSwitcher" class="form-select w-auto" onchange="updateServerPreference()">
+                                    <option value="default">Server 1 [FRANKFURT, DE]</option>
+                                    <option value="us">Server 2 [FLORIDA, USA]</option>
+                                </select>
+                            </div>
                         `;
 
                         commentsIframe.src = `com.html?id=${audioId}`;
@@ -146,7 +141,7 @@
                         });
 
                         if ('mediaSession' in navigator) {
-                            const mediaMetadata = new MediaMetadata({
+                            navigator.mediaSession.metadata = new MediaMetadata({
                                 title: title,
                                 artist: author,
                                 album: 'YouTube Audio',
@@ -157,7 +152,6 @@
                                 ]
                             });
 
-                            navigator.mediaSession.metadata = mediaMetadata;
                             navigator.mediaSession.setActionHandler('play', () => player.play());
                             navigator.mediaSession.setActionHandler('pause', () => player.pause());
                         }
