@@ -110,61 +110,75 @@
             loadTrending();
         }
 
-        // Function to load trending videos based on server selection
-        function loadTrending() {
-            const serverPreference = getCookie('server') || 'default'; // Default to 'default' if no cookie is set
-            const region = serverPreference === 'us' ? 'US' : 'DE';
+       // Function to convert channel URLs
+function convertChannelUrl(url) {
+    const channelRegex = /^\/channel\/([a-zA-Z0-9_-]+)$/;
+    const match = url.match(channelRegex);
+    if (match) {
+        return `chn.html?id=${match[1]}`;
+    }
+    return url; // Return the original URL if it doesn't match the channel pattern
+}
 
-            // Update server selector UI based on cookie value
-            const serverSwitcher = document.getElementById('serverSwitcher');
-            serverSwitcher.value = serverPreference;
+// Function to load trending videos based on server selection
+function loadTrending() {
+    const serverPreference = getCookie('server') || 'default'; // Default to 'default' if no cookie is set
+    const region = serverPreference === 'us' ? 'US' : 'DE';
 
-            // Fetch trending videos based on the selected region
-            fetch(`/ytapi/trending?region=${region}`)
-                .then(response => response.json())
-                .then(data => {
-                    const videoContainer = document.getElementById('videoContainer');
-                    videoContainer.innerHTML = ''; // Clear previous content
+    // Update server selector UI based on cookie value
+    const serverSwitcher = document.getElementById('serverSwitcher');
+    serverSwitcher.value = serverPreference;
 
-                    data.forEach(video => {
-                        const videoCard = document.createElement('div');
-                        videoCard.classList.add('video-card');
-                        
-                        // Check if the video is a YouTube video and format accordingly
-                        const videoUrl = video.url;
-                        const videoIdMatch = videoUrl.match(/v=([a-zA-Z0-9_-]+)/);
-                        let videoLink = videoUrl;
-                        let watchButton = '';
-                        let listenButton = '';
+    // Fetch trending videos based on the selected region
+    fetch(`/ytapi/trending?region=${region}`)
+        .then(response => response.json())
+        .then(data => {
+            const videoContainer = document.getElementById('videoContainer');
+            videoContainer.innerHTML = ''; // Clear previous content
 
-                        if (videoIdMatch) {
-                            const videoId = videoIdMatch[1];
-                            videoLink = `vid.html?id=${videoId}`;
-                            watchButton = `<a href="vid.html?id=${videoId}" class="btn btn-secondary btn-sm mt-2">Watch 360P</a>`;
-                            listenButton = `<a href="aud.html?id=${videoId}" class="btn btn-secondary btn-sm mt-2">Listen</a>`;
-                        }
+            data.forEach(video => {
+                const videoCard = document.createElement('div');
+                videoCard.classList.add('video-card');
+                
+                // Check if the video is a YouTube video and format accordingly
+                const videoUrl = video.url;
+                const videoIdMatch = videoUrl.match(/v=([a-zA-Z0-9_-]+)/);
+                let videoLink = videoUrl;
+                let watchButton = '';
+                let listenButton = '';
 
-                        videoCard.innerHTML = `
-                            <img src="${video.thumbnail}" alt="${video.title}" class="video-thumbnail">
-                            <div class="video-title">${video.title}</div>
-                            <div>Uploader: <a href="${video.uploaderUrl}" target="_blank">${video.uploaderName}</a></div>
-                            <div>Views: ${video.views.toLocaleString()}</div>
-                            <div>Uploaded: ${new Date(video.uploaded).toLocaleDateString()}</div>
-                            <div class="d-flex gap-2 mt-2">
-                                ${watchButton}
-                                ${listenButton}
-                            </div>
-                        `;
-                        
-                        videoContainer.appendChild(videoCard);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error fetching trending videos:', error);
-                    const videoContainer = document.getElementById('videoContainer');
-                    videoContainer.innerHTML = '<p class="text-danger">Error loading trending videos.</p>';
-                });
-        }
+                // If it's a video, change the link to vid.html?id=videoId
+                if (videoIdMatch) {
+                    const videoId = videoIdMatch[1];
+                    videoLink = `vid.html?id=${videoId}`;
+                    watchButton = `<a href="vid.html?id=${videoId}" class="btn btn-secondary btn-sm mt-2">Watch 360P</a>`;
+                    listenButton = `<a href="aud.html?id=${videoId}" class="btn btn-secondary btn-sm mt-2">Listen</a>`;
+                }
+
+                // Convert channel URL
+                const uploaderUrl = convertChannelUrl(video.uploaderUrl);
+
+                videoCard.innerHTML = `
+                    <img src="${video.thumbnail}" alt="${video.title}" class="video-thumbnail">
+                    <div class="video-title">${video.title}</div>
+                    <div>Uploader: <a href="${uploaderUrl}" target="_blank">${video.uploaderName}</a></div>
+                    <div>Views: ${video.views.toLocaleString()}</div>
+                    <div>Uploaded: ${new Date(video.uploaded).toLocaleDateString()}</div>
+                    <div class="d-flex gap-2 mt-2">
+                        ${watchButton}
+                        ${listenButton}
+                    </div>
+                `;
+                
+                videoContainer.appendChild(videoCard);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching trending videos:', error);
+            const videoContainer = document.getElementById('videoContainer');
+            videoContainer.innerHTML = '<p class="text-danger">Error loading trending videos.</p>';
+        });
+}
 
         // Set the initial server selection based on the cookie
         window.onload = function() {
