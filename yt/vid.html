@@ -69,11 +69,11 @@
                 <option value="us">Server 2 [FLORIDA, USA]</option>
             </select>
         </div>
-
+<center>
         <div id="videoContainer">
             <!-- JW Player will be embedded here -->
         </div>
-
+</center>
         <a class="btn btn-secondary d-block mx-auto mt-4" href="search.html">Back to Search</a>
     </div>
 
@@ -133,8 +133,8 @@
                         `;
 
                         jwplayer("jwplayer-container").setup({
-    file: "https://example.com/video.mp4",
-    image: "https://example.com/thumbnail.jpg",
+    file: videoUrl,
+    image: posterUrl,
     width: "100%",
     aspectratio: "16:9",
        cast: {}, // This enables the cast functionality
