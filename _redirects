@@ -5,7 +5,7 @@
 /p /go.html 200
 /games/* https://hdun.org/games/:splat 200
 /~/* https://hdun.org/~/:splat 200
-/ytapi/* https://pipedapi.kavin.rocks/:splat 200
+/ytapi/* https://pipedapi.reallyaweso.me/:splat 200
 /ytth/* https://i3.ytimg.com/:splat 200
 /ytprx/* https://ytprro.jdx3.org/:splat 200
 /usprx/* https://cors.jdx3.org/:splat 200
