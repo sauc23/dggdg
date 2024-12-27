@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Comments Viewer</title>
+    <style>
+       body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .comment {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        .thumbnail {
+            margin-right: 10px;
+        }
+        .thumbnail img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+        .details {
+            flex: 1;
+        }
+        .author {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #90caf9;
+        }
+        .comment-text {
+            margin-bottom: 5px;
+            color: #e0e0e0;
+        }
+        .meta {
+            font-size: 0.9em;
+            color: #a0a0a0;
+        }
+        .load-more {
+            display: block;
+            text-align: center;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #1e88e5;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .load-more:hover {
+            background-color: #1565c0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Comments</h1>
+        <div id="comments"></div>
+        <a id="loadMore" class="load-more" href="#" style="display: none;">Load More</a>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoId = urlParams.get('id');
+        const commentsContainer = document.getElementById('comments');
+        const loadMoreBtn = document.getElementById('loadMore');
+        let nextPageToken = null;
+
+        async function fetchComments() {
+            try {
+                const endpoint = nextPageToken
+                    ? `/ytapi/nextpage/comments/${videoId}?nextpage=${encodeURIComponent(nextPageToken)}`
+                    : `/ytapi/comments/${videoId}`;
+                const response = await fetch(endpoint);
+                const data = await response.json();
+
+                if (data.disabled) {
+                    commentsContainer.innerHTML = '<p>Comments are disabled for this video.</p>';
+                    return;
+                }
+
+                renderComments(data.comments);
+
+                if (data.nextpage) {
+                    nextPageToken = data.nextpage;
+                    loadMoreBtn.style.display = 'block';
+                } else {
+                    loadMoreBtn.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error fetching comments:', error);
+                commentsContainer.innerHTML = '<p>Failed to load comments.</p>';
+            }
+        }
+function processCommentText(commentText) {
+    // Convert YouTube channel links
+    commentText = commentText.replace(
+        /<a href="https:\/\/www\.youtube\.com\/channel\/([\w-]+)">.*?<\/a>/g,
+        (match, channelId) => `chn.html?id=${channelId}`
+    );
+
+    // Remove hyperlinks for timestamps
+    commentText = commentText.replace(
+        /<a href="https:\/\/www\.youtube\.com\/watch\?v=[\w-]+&amp;t=\d+">(.*?)<\/a>/g,
+        '$1'
+    );
+
+    return commentText;
+}
+
+        function renderComments(comments) {
+    comments.forEach(comment => {
+        const commentEl = document.createElement('div');
+        commentEl.classList.add('comment');
+
+        const processedCommentText = processCommentText(comment.commentText);
+
+        commentEl.innerHTML = `
+            <div class="thumbnail">
+                <img src="${comment.thumbnail}" alt="${comment.author}">
+            </div>
+            <div class="details">
+                <div class="author">${comment.author}</div>
+                <div class="comment-text">${processedCommentText}</div>
+                <div class="meta">
+                    <span>${comment.commentedTime}</span> | 
+                    <span>${comment.likeCount} likes</span>
+                </div>
+            </div>
+        `;
+        commentsContainer.appendChild(commentEl);
+    });
+}
+
+
+        loadMoreBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            fetchComments();
+        });
+
+        // Initial fetch
+        if (videoId) {
+            fetchComments();
+        } else {
+            commentsContainer.innerHTML = '<p>Invalid video ID.</p>';
+        }
+    </script>
+</body>
+</html>
