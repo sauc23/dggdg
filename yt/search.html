@@ -44,13 +44,14 @@
         .info .uploader {
             font-weight: bold;
         }
-        .search-container {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background-color: #121212;
-            padding-top: 20px;
-        }
+       .search-container {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: #121212;
+    padding: 10px;
+}
+
     </style>
 </head>
 <body>
@@ -68,98 +69,112 @@
     </div>
 
     <script>
-        let nextPageUrl = null;
-        let currentQuery = '';
+    let nextPageData = null; // To store the next page data
+    let isLoading = false;  // To prevent multiple simultaneous fetches
 
-        async function searchVideos() {
-            const query = document.getElementById('searchQuery').value;
-            currentQuery = query; // Store the current query
-            const response = await fetch(`/ytapi/search?q=${encodeURIComponent(query)}&filter=all`);
-            const data = await response.json();
-            nextPageUrl = data.nextpage ? data.nextpage : null; // Set the next page URL
-            displayResults(data.items);
-        }
+    async function searchVideos() {
+        const query = document.getElementById('searchQuery').value;
 
-        function displayResults(items) {
-            const resultsContainer = document.getElementById('results');
-            items.forEach(item => {
-                const element = document.createElement('div');
-                element.className = 'item';
+        // Reset state for a new search
+        nextPageData = null;
+        isLoading = false;
+        document.getElementById('results').innerHTML = '';
 
-                if (item.type === 'channel') {
-                    const channelId = item.url.split('/').pop();
-                    element.innerHTML = `
-                        <img src="https://cors-proxy.cooks.fyi/${item.thumbnail}" alt="${item.name}">
-                        <div class="info">
-                            <h3>${item.name}</h3>
-                            <p class="uploader">${item.subscribers} Subscribers</p>
-                            <p>INFO: ${item.description || 'No description available'}</p>
-                            <button class="btn btn-success" onclick="window.location.href='chn.html?id=${channelId}'">View</button>
-                        </div>
-                    `;
-                } else if (item.type === 'stream') {
-                    const videoId = item.url.split('=')[1];
-                    element.innerHTML = `
-                        <img src="https://cors-proxy.cooks.fyi/${item.thumbnail}" alt="${item.title}">
-                        <div class="info">
-                            <h3>${item.title}</h3>
-                            <p class="uploader">Uploaded by: ${item.uploaderName}</p>
-                            <p>Uploaded: ${item.uploadedDate || 'Unknown'}</p>
-                            <p>Views: ${item.views}</p>
-                            <button class="btn btn-success" onclick="window.location.href='vid.html?id=${videoId}'">Watch (360P)</button>
-                            <button class="btn btn-info" onclick="window.location.href='aud.html?id=${videoId}'">Listen (MP3)</button>
-                        </div>
-                    `;
-                } else if (item.type === 'playlist') {
-                    const playlistId = item.url.split('list=')[1];
-                    element.innerHTML = `
-                        <img src="https://cors-proxy.cooks.fyi/${item.thumbnail}" alt="${item.name}">
-                        <div class="info">
-                            <h3>${item.name}</h3>
-                            <p class="uploader">By: ${item.uploaderName}</p>
-                            <button class="btn btn-primary" onclick="window.location.href='ply.html?id=${playlistId}'">View Playlist</button>
-                        </div>
-                    `;
-                }
+        // Fetch the first page
+        const response = await fetch(`https://tooreal.is-a-fullstack.dev/ytapi/search?q=${encodeURIComponent(query)}&filter=all`);
+        const data = await response.json();
+        nextPageData = data.nextpage;
+        displayResults(data.items);
+    }
 
-                resultsContainer.appendChild(element);
-            });
-        }
+    function displayResults(items) {
+        const resultsContainer = document.getElementById('results');
 
-        async function loadMoreResults() {
-            if (!nextPageUrl) return;
+        items.forEach(item => {
+            const element = document.createElement('div');
+            element.className = 'item';
 
-            const response = await fetch(`/ytapi/nextpage/search?nextpage=${encodeURIComponent(nextPageUrl)}&q=${encodeURIComponent(currentQuery)}&filter=all`);
-            const data = await response.json();
-            nextPageUrl = data.nextpage ? data.nextpage : null; // Update the next page URL
-            displayResults(data.items);
-        }
-
-        // Detect when the user scrolls to the bottom and load more results
-        window.onscroll = function() {
-            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
-                if (nextPageUrl) {
-                    loadMoreResults();
-                    document.getElementById('loading').style.display = 'block'; // Show loading indicator
-                }
+            if (item.type === 'channel') {
+                const channelId = item.url.split('/').pop();
+                element.innerHTML = `
+                    <img src="https://cors-proxy.cooks.fyi/${item.thumbnail}" alt="${item.name}">
+                    <div class="info">
+                        <h3>${item.name}</h3>
+                        <p class="uploader">${item.subscribers} Subscribers</p>
+                        <p>INFO: ${item.description || 'No description available'}</p>
+                        <button class="btn btn-success" onclick="window.location.href='chn.html?id=${channelId}'">View</button>
+                    </div>
+                `;
+            } else if (item.type === 'stream') {
+                const videoId = item.url.split('=')[1];
+                element.innerHTML = `
+                    <img src="https://cors-proxy.cooks.fyi/${item.thumbnail}" alt="${item.title}">
+                    <div class="info">
+                        <h3>${item.title}</h3>
+                        <p class="uploader">Uploaded by: ${item.uploaderName}</p>
+                        <p>Uploaded: ${item.uploadedDate || 'Unknown'}</p>
+                        <p>Views: ${item.views}</p>
+                        <button class="btn btn-success" onclick="window.location.href='vid.html?id=${videoId}'">Watch (360P)</button>
+                        <button class="btn btn-info" onclick="window.location.href='aud.html?id=${videoId}'">Listen (MP3)</button>
+                    </div>
+                `;
+            } else if (item.type === 'playlist') {
+                const playlistId = item.url.split('list=')[1];
+                element.innerHTML = `
+                    <img src="https://cors-proxy.cooks.fyi/${item.thumbnail}" alt="${item.name}">
+                    <div class="info">
+                        <h3>${item.name}</h3>
+                        <p class="uploader">By: ${item.uploaderName}</p>
+                        <button class="btn btn-primary" onclick="window.location.href='ply.html?id=${playlistId}'">View Playlist</button>
+                    </div>
+                `;
             }
-        };
 
-        // Function to get query parameter from URL
-        function getQueryParameter(name) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(name);
-        }
+            resultsContainer.appendChild(element);
+        });
+    }
 
-        // Automatically submit the search if a query parameter is present
-        window.onload = function() {
-            const query = getQueryParameter('q');
-            if (query) {
-                document.getElementById('searchQuery').value = query;
-                searchVideos();
+    async function loadNextPage() {
+        if (isLoading || !nextPageData) return;
+
+        isLoading = true;
+
+        // Fetch the next page
+        const query = document.getElementById('searchQuery').value;
+        const response = await fetch(`https://tooreal.is-a-fullstack.dev/ytapi/nextpage/search?nextpage=${encodeURIComponent(nextPageData)}&q=${encodeURIComponent(query)}&filter=all`);
+        const data = await response.json();
+        nextPageData = data.nextpage;
+        displayResults(data.items);
+
+        isLoading = false;
+    }
+
+    function setupInfiniteScroll() {
+        window.addEventListener('scroll', () => {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
+                loadNextPage();
             }
-        };
-    </script>
+        });
+    }
+
+    // Automatically submit the search if a query parameter is present
+    window.onload = function() {
+        setupInfiniteScroll();
+
+        const query = getQueryParameter('q');
+        if (query) {
+            document.getElementById('searchQuery').value = query;
+            searchVideos();
+        }
+    };
+
+    // Function to get query parameter from URL
+    function getQueryParameter(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+</script>
+
 
 </body>
 </html>
