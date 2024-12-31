@@ -1,0 +1,302 @@
+<html><head><base href="." />
+<meta charset="UTF-8">
+<title>RetroMeet - Nostalgic Video Chat</title>
+<style>
+:root {
+  --glass: rgba(255, 255, 255, 0.1);
+  --border: rgba(255, 255, 255, 0.2);
+  --gradient: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--gradient);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.container {
+  width: 90%;
+  max-width: 1200px;
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.video-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.video-wrapper {
+  position: relative;
+  border-radius: 15px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.2);
+  aspect-ratio: 16/9;
+}
+
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.controls {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+button {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  color: white;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.status {
+  text-align: center;
+  margin: 1rem 0;
+  font-size: 1.2rem;
+}
+
+.chat-container {
+  margin-top: 1rem;
+  background: var(--glass);
+  border-radius: 15px;
+  padding: 1rem;
+  max-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-messages {
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  min-height: 100px;
+  max-height: 150px;
+}
+
+.chat-input-container {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chat-input {
+  flex-grow: 1;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem;
+  color: white;
+  font-size: 1rem;
+}
+
+.chat-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.message {
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  border-radius: 8px;
+  max-width: 80%;
+}
+
+.sent {
+  background: rgba(78, 205, 196, 0.2);
+  margin-left: auto;
+}
+
+.received {
+  background: rgba(255, 107, 107, 0.2);
+  margin-right: auto;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.connecting {
+  animation: pulse 2s infinite;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="video-container">
+    <div class="video-wrapper">
+      <video id="localVideo" autoplay muted playsinline></video>
+    </div>
+    <div class="video-wrapper">
+      <video id="remoteVideo" autoplay playsinline></video>
+    </div>
+  </div>
+  
+  <div class="status" id="status">Click "Start" to begin</div>
+  
+  <div class="controls">
+    <button id="startButton">Start</button>
+    <button id="nextButton" disabled>Next</button>
+    <button id="audioToggle">Mute</button>
+    <button id="videoToggle">Hide Video</button>
+  </div>
+
+  <div class="chat-container">
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-container">
+      <input type="text" class="chat-input" id="chatInput" placeholder="Type a message..." disabled>
+      <button id="sendButton" disabled>Send</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
+<script>
+let localStream;
+let peer;
+let isAudioEnabled = true;
+let isVideoEnabled = true;
+
+const startButton = document.getElementById('startButton');
+const nextButton = document.getElementById('nextButton');
+const audioToggle = document.getElementById('audioToggle');
+const videoToggle = document.getElementById('videoToggle');
+const status = document.getElementById('status');
+const localVideo = document.getElementById('localVideo');
+const remoteVideo = document.getElementById('remoteVideo');
+const chatMessages = document.getElementById('chatMessages');
+const chatInput = document.getElementById('chatInput');
+const sendButton = document.getElementById('sendButton');
+
+async function startChat() {
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true
+    });
+    localVideo.srcObject = localStream;
+    startButton.disabled = true;
+    nextButton.disabled = false;
+    chatInput.disabled = false;
+    sendButton.disabled = false;
+    status.textContent = "Looking for a partner...";
+    status.classList.add('connecting');
+    connectToPeer();
+  } catch (err) {
+    status.textContent = "Camera/Microphone access denied";
+  }
+}
+
+function connectToPeer() {
+  peer = new SimplePeer({
+    initiator: true,
+    stream: localStream,
+    trickle: false
+  });
+
+  peer.on('signal', data => {
+    console.log('Generated signal data', data);
+  });
+
+  peer.on('connect', () => {
+    status.textContent = "Connected!";
+    status.classList.remove('connecting');
+  });
+
+  peer.on('stream', stream => {
+    remoteVideo.srcObject = stream;
+  });
+
+  peer.on('data', data => {
+    addMessage(new TextDecoder().decode(data), 'received');
+  });
+
+  peer.on('close', () => {
+    status.textContent = "Disconnected";
+    remoteVideo.srcObject = null;
+    chatMessages.innerHTML = '';
+  });
+}
+
+function nextPeer() {
+  if (peer) {
+    peer.destroy();
+  }
+  connectToPeer();
+  status.textContent = "Looking for a new partner...";
+  status.classList.add('connecting');
+  chatMessages.innerHTML = '';
+}
+
+function toggleAudio() {
+  isAudioEnabled = !isAudioEnabled;
+  localStream.getAudioTracks().forEach(track => {
+    track.enabled = isAudioEnabled;
+  });
+  audioToggle.textContent = isAudioEnabled ? 'Mute' : 'Unmute';
+}
+
+function toggleVideo() {
+  isVideoEnabled = !isVideoEnabled;
+  localStream.getVideoTracks().forEach(track => {
+    track.enabled = isVideoEnabled;
+  });
+  videoToggle.textContent = isVideoEnabled ? 'Hide Video' : 'Show Video';
+}
+
+function addMessage(text, type) {
+  const message = document.createElement('div');
+  message.classList.add('message', type);
+  message.textContent = text;
+  chatMessages.appendChild(message);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function sendMessage() {
+  const text = chatInput.value.trim();
+  if (text && peer && peer.connected) {
+    peer.send(new TextEncoder().encode(text));
+    addMessage(text, 'sent');
+    chatInput.value = '';
+  }
+}
+
+startButton.addEventListener('click', startChat);
+nextButton.addEventListener('click', nextPeer);
+audioToggle.addEventListener('click', toggleAudio);
+videoToggle.addEventListener('click', toggleVideo);
+sendButton.addEventListener('click', sendMessage);
+chatInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    sendMessage();
+  }
+});
+</script>
+</body></html>
