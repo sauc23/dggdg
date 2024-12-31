@@ -1,302 +1,1349 @@
-<html><head><base href="." />
-<meta charset="UTF-8">
-<title>RetroMeet - Nostalgic Video Chat</title>
+<html><head><base href="/" />
+<script>const room = new WebsimSocket();</script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
 <style>
-:root {
-  --glass: rgba(255, 255, 255, 0.1);
-  --border: rgba(255, 255, 255, 0.2);
-  --gradient: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
 body {
-  margin: 0;
+  background: #0D0A19;
+  color: #F5F5F7;
   min-height: 100vh;
-  background: var(--gradient);
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-}
-
-.container {
-  width: 90%;
-  max-width: 1200px;
-  background: var(--glass);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.video-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.video-wrapper {
-  position: relative;
-  border-radius: 15px;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.2);
-  aspect-ratio: 16/9;
-}
-
-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.controls {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-button {
-  background: var(--glass);
-  border: 1px solid var(--border);
-  padding: 1rem 2rem;
-  border-radius: 10px;
-  color: white;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-}
-
-.status {
-  text-align: center;
-  margin: 1rem 0;
-  font-size: 1.2rem;
-}
-
-.chat-container {
-  margin-top: 1rem;
-  background: var(--glass);
-  border-radius: 15px;
-  padding: 1rem;
-  max-height: 200px;
   display: flex;
   flex-direction: column;
 }
 
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.video-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin: 0;
+}
+
+.video-wrapper {
+  position: relative;
+  background: #1A1525;
+  border-radius: 24px;
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  aspect-ratio: 16/9;
+  min-height: 0;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+.video-wrapper:hover {
+  transform: translateY(-4px);
+}
+
+.video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 24px;
+  display: block;
+}
+
+#localCanvas, #remoteCanvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px;
+  background: linear-gradient(transparent, rgba(13,10,25,0.9));
+  display: flex;
+  gap: 12px;
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.video-wrapper:hover .controls {
+  opacity: 1;
+}
+
+button {
+  background: #6B4EFF;
+  color: #F5F5F7;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+button:hover {
+  background: #5540CC;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(107,78,255,0.3);
+}
+
+.disabled {
+  background: #2D2438;
+  cursor: not-allowed;
+}
+
+.user-info {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: rgba(13,10,25,0.8);
+  padding: 8px 16px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #6B4EFF;
+}
+
+.header {
+  text-align: center;
+  margin: 8px 0;
+}
+
+.header h1 {
+  font-size: 1.8em;
+  margin-bottom: 4px;
+  background: linear-gradient(135deg, #6B4EFF, #9F8FFF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header p {
+  font-size: 1em;
+  margin-bottom: 8px;
+  color: #9F8FFF;
+}
+
+.next-btn {
+  font-size: 1.1em;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #6B4EFF, #5540CC);
+  border-radius: 16px;
+}
+
+.next-btn:hover {
+  background: linear-gradient(135deg, #5540CC, #4433AA);
+}
+
+.canvas-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.connecting {
+  animation: pulse 1.5s infinite cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, #6B4EFF33, #9F8FFF33);
+  border-radius: 14px;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+button:hover::after {
+  opacity: 1;
+}
+
+.blur-controls {
+  background: #1A1525;
+  border-radius: 24px;
+  padding: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  margin-top: 12px;
+  text-align: center;
+}
+
+.blur-controls h3 {
+  margin-bottom: 8px;
+  font-size: 1em;
+}
+
+.main-container {
+  display: flex;
+  gap: 16px;
+  margin: 12px 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.left-column {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.chat-container {
+  flex: 1;
+  background: #1A1525;
+  border-radius: 24px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: 0;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
 .chat-messages {
-  flex-grow: 1;
+  flex: 1;
   overflow-y: auto;
-  margin-bottom: 1rem;
-  padding: 0.5rem;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-  min-height: 100px;
-  max-height: 150px;
+  margin-bottom: 8px;
+  min-height: 0;
+  padding-right: 10px;
+}
+
+.chat-messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: #0D0A19;
+  border-radius: 4px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: #6B4EFF;
+  border-radius: 4px;
+}
+
+.message {
+  margin-bottom: 8px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.message .avatar {
+  width: 32px;
+  height: 32px;
+}
+
+.message-content {
+  background: #2D2438;
+  padding: 8px 12px;
+  border-radius: 16px;
+  border-top-left-radius: 4px;
+  max-width: 80%;
+}
+
+.message.self {
+  flex-direction: row-reverse;
+}
+
+.message.self .message-content {
+  background: #6B4EFF;
+  border-radius: 16px;
+  border-top-right-radius: 4px;
+}
+
+.message-meta {
+  font-size: 0.8em;
+  color: #9F8FFF;
+  margin-bottom: 4px;
 }
 
 .chat-input-container {
   display: flex;
-  gap: 0.5rem;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .chat-input {
-  flex-grow: 1;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid var(--border);
+  flex: 1;
+  background: #2D2438;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 12px;
+  color: #F5F5F7;
+  font-size: 1em;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.chat-input:focus {
+  box-shadow: 0 0 0 2px #6B4EFF;
+}
+
+.send-btn {
+  padding: 8px 20px;
+}
+
+.stall-warning {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(13,10,25,0.9);
+  color: #FF4E4E;
+  padding: 12px 24px;
+  border-radius: 12px;
+  display: none;
+  text-align: center;
+  backdrop-filter: blur(8px);
+  z-index: 10;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.controls button {
+  padding: 8px 16px;
+}
+
+.debug-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 300px;
+  background: rgba(26, 21, 37, 0.95);
+  border-left: 2px solid #6B4EFF;
+  height: 100vh;
+  padding: 16px;
+  font-family: monospace;
+  font-size: 12px;
+  color: #F5F5F7;
+  display: none;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.debug-panel.active {
+  display: block;
+}
+
+.debug-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #6B4EFF;
+}
+
+.debug-close {
+  background: none;
+  border: none;
+  color: #F5F5F7;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.debug-close:hover {
+  color: #FF4E4E;
+}
+
+.debug-section {
+  margin-bottom: 16px;
+}
+
+.debug-section h3 {
+  color: #6B4EFF;
+  margin-bottom: 8px;
+}
+
+.debug-item {
+  margin-bottom: 4px;
+  word-break: break-all;
+}
+
+.debug-log {
+  margin-bottom: 16px;
+  padding: 8px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.debug-log-entry {
+  margin-bottom: 4px;
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(107,78,255,0.2);
+}
+
+.debug-log-entry.error {
+  color: #FF4E4E;
+}
+
+.debug-log-entry.warn {
+  color: #FFB74E;
+}
+
+.debug-log-entry.info {
+  color: #4EFF4E;
+}
+
+.toggle-debug {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  background: #6B4EFF;
+  color: #F5F5F7;
+  border: none;
+  padding: 8px 16px;
   border-radius: 8px;
-  padding: 0.5rem;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+.initial-prompt {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(13,10,25,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.initial-prompt-content {
+  background: #1A1525;
+  padding: 24px;
+  border-radius: 24px;
+  text-align: center;
+  max-width: 400px;
+  margin: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+.initial-prompt-content h2 {
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #6B4EFF, #9F8FFF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.initial-prompt-content p {
+  margin-bottom: 24px;
+  color: #F5F5F7;
+}
+
+.dismiss-btn {
+  background: linear-gradient(135deg, #6B4EFF, #5540CC);
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
   color: white;
-  font-size: 1rem;
+  cursor: pointer;
+  font-weight: 500;
 }
 
-.chat-input::placeholder {
-  color: rgba(255, 255, 255, 0.6);
+.dismiss-btn:hover {
+  background: linear-gradient(135deg, #5540CC, #4433AA);
 }
 
-.message {
-  margin: 0.5rem 0;
-  padding: 0.5rem;
+.toggle-feedback {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  z-index: 1001;
+}
+
+.feedback-panel {
+  position: fixed;
+  bottom: 16px;
+  left: 120px;
+  background: #1A1525;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  z-index: 1000;
+  max-width: 300px;
+  display: none;
+}
+
+.feedback-panel.active {
+  display: block;
+}
+
+.feedback-panel h3 {
+  margin-bottom: 12px;
+  color: #6B4EFF;
+}
+
+.feedback-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.feedback-input {
+  width: 100%;
+  background: #2D2438;
+  border: none;
+  padding: 8px 12px;
   border-radius: 8px;
-  max-width: 80%;
+  color: #F5F5F7;
+  resize: vertical;
+  min-height: 80px;
 }
 
-.sent {
-  background: rgba(78, 205, 196, 0.2);
-  margin-left: auto;
+.feedback-input:focus {
+  outline: 2px solid #6B4EFF;
 }
 
-.received {
-  background: rgba(255, 107, 107, 0.2);
-  margin-right: auto;
+.feedback-submit {
+  width: 100%;
+  margin-top: 8px;
 }
 
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+.feedback-list {
+  margin-top: 12px;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
-.connecting {
-  animation: pulse 2s infinite;
+.feedback-item {
+  background: #2D2438;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.feedback-meta {
+  font-size: 0.8em;
+  color: #9F8FFF;
+  margin-bottom: 4px;
+}
+
+.feedback-content {
+  word-break: break-word;
 }
 </style>
 </head>
 <body>
 <div class="container">
-  <div class="video-container">
-    <div class="video-wrapper">
-      <video id="localVideo" autoplay muted playsinline></video>
-    </div>
-    <div class="video-wrapper">
-      <video id="remoteVideo" autoplay playsinline></video>
-    </div>
+  <div class="header">
+    <h1>Random Video Chat</h1>
+    <p>Connect with interesting people worldwide</p>
+    <button id="nextPerson" class="next-btn" style="animation: pulse 2s infinite;">Find Someone New</button>
   </div>
   
-  <div class="status" id="status">Click "Start" to begin</div>
-  
-  <div class="controls">
-    <button id="startButton">Start</button>
-    <button id="nextButton" disabled>Next</button>
-    <button id="audioToggle">Mute</button>
-    <button id="videoToggle">Hide Video</button>
-  </div>
-
-  <div class="chat-container">
-    <div class="chat-messages" id="chatMessages"></div>
-    <div class="chat-input-container">
-      <input type="text" class="chat-input" id="chatInput" placeholder="Type a message..." disabled>
-      <button id="sendButton" disabled>Send</button>
+  <div class="main-container">
+    <div class="left-column">
+      <div class="video-container">
+        <div class="video-wrapper">
+          <video id="localVideo" class="video" autoplay muted></video>
+          <canvas id="localCanvas" class="canvas-wrapper"></canvas>
+          <div class="user-info">
+            <img id="localAvatar" class="avatar" />
+            <span id="localUsername"></span>
+          </div>
+          <div class="controls">
+            <button id="muteAudio">Mute Audio</button>
+            <button id="muteVideo">Mute Video</button>
+          </div>
+        </div>
+        
+        <div class="video-wrapper">
+          <video id="remoteVideo" class="video" autoplay></video>
+          <canvas id="remoteCanvas" class="canvas-wrapper"></canvas>
+          <div class="user-info">
+            <img id="remoteAvatar" class="avatar" />
+            <span id="remoteUsername">Waiting for connection...</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="blur-controls">
+        <h3>Privacy Settings</h3>
+        <button id="toggleBlur" class="blur-btn">Enable Face Blur</button>
+      </div>
+    </div>
+    
+    <div class="chat-container">
+      <div class="chat-messages" id="chatMessages">
+      </div>
+      <div class="chat-input-container">
+        <input type="text" class="chat-input" id="chatInput" placeholder="Type a message..." />
+        <button class="send-btn" id="sendMessage">Send</button>
+      </div>
     </div>
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
+<button class="toggle-debug" id="toggleDebug">Show Debug</button>
+
+<div class="debug-panel" id="debugPanel">
+  <div class="debug-header">
+    <h2>Debug Panel</h2>
+    <button class="debug-close" id="closeDebug">✕</button>
+  </div>
+  
+  <div class="debug-section">
+    <h3>Connection Status</h3>
+    <div class="debug-item" id="connectionState">Not connected</div>
+    <div class="debug-item" id="iceConnectionState">ICE: new</div>
+    <div class="debug-item" id="signalingState">Signaling: stable</div>
+  </div>
+  
+  <div class="debug-section">
+    <h3>Local Info</h3>
+    <div class="debug-item" id="localClientId"></div>
+    <div class="debug-item" id="localVideoState"></div>
+    <div class="debug-item" id="localAudioState"></div>
+    <div class="debug-item" id="blurState"></div>
+  </div>
+  
+  <div class="debug-section">
+    <h3>Remote Info</h3>
+    <div class="debug-item" id="currentPeerId"></div>
+    <div class="debug-item" id="remoteVideoState"></div>
+    <div class="debug-item" id="remoteAudioState"></div>
+  </div>
+  
+  <div class="debug-section">
+    <h3>Event Log</h3>
+    <div class="debug-log" id="debugLog"></div>
+  </div>
+</div>
+
+<button class="toggle-feedback" id="toggleFeedback">Give Feedback</button>
+
+<div class="feedback-panel" id="feedbackPanel">
+  <h3>Submit Feedback</h3>
+  <form class="feedback-form" id="feedbackForm">
+    <textarea class="feedback-input" placeholder="Share your thoughts, suggestions or report issues..." required></textarea>
+    <button type="submit" class="feedback-submit">Submit Feedback</button>
+  </form>
+  <div id="feedbackList" class="feedback-list" style="display: none;"></div>
+</div>
+
+<div id="initialPrompt" class="initial-prompt">
+  <div class="initial-prompt-content">
+    <h2>Welcome to Random Video Chat!</h2>
+    <p>Click "Find Someone New" to start your first conversation</p>
+    <button onclick="dismissPrompt()" class="dismiss-btn">Got it!</button>
+  </div>
+</div>
+
 <script>
 let localStream;
-let peer;
-let isAudioEnabled = true;
-let isVideoEnabled = true;
+let peerConnection;
+let currentPeer = null;
+let faceBlurEnabled = false;
+let blazeFaceModel = null;
+let localVideoCanvas, remoteVideoCanvas;
+let localCanvasCtx, remoteCanvasCtx;
+let animationFrame;
+let canvasStream;
+let currentSender;
+let lastRemoteFrameTime = 0;
+let videoStallCheckInterval;
 
-const startButton = document.getElementById('startButton');
-const nextButton = document.getElementById('nextButton');
-const audioToggle = document.getElementById('audioToggle');
-const videoToggle = document.getElementById('videoToggle');
-const status = document.getElementById('status');
-const localVideo = document.getElementById('localVideo');
-const remoteVideo = document.getElementById('remoteVideo');
-const chatMessages = document.getElementById('chatMessages');
-const chatInput = document.getElementById('chatInput');
-const sendButton = document.getElementById('sendButton');
+const configuration = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' }
+  ]
+};
 
-async function startChat() {
+async function loadFaceDetectionModel() {
   try {
-    localStream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true
-    });
-    localVideo.srcObject = localStream;
-    startButton.disabled = true;
-    nextButton.disabled = false;
-    chatInput.disabled = false;
-    sendButton.disabled = false;
-    status.textContent = "Looking for a partner...";
-    status.classList.add('connecting');
-    connectToPeer();
+    blazeFaceModel = await blazeface.load();
   } catch (err) {
-    status.textContent = "Camera/Microphone access denied";
+    console.error('Error loading face detection model:', err);
   }
 }
 
-function connectToPeer() {
-  peer = new SimplePeer({
-    initiator: true,
-    stream: localStream,
-    trickle: false
-  });
-
-  peer.on('signal', data => {
-    console.log('Generated signal data', data);
-  });
-
-  peer.on('connect', () => {
-    status.textContent = "Connected!";
-    status.classList.remove('connecting');
-  });
-
-  peer.on('stream', stream => {
-    remoteVideo.srcObject = stream;
-  });
-
-  peer.on('data', data => {
-    addMessage(new TextDecoder().decode(data), 'received');
-  });
-
-  peer.on('close', () => {
-    status.textContent = "Disconnected";
-    remoteVideo.srcObject = null;
-    chatMessages.innerHTML = '';
-  });
+async function detectAndBlurFaces(video, canvas, ctx) {
+  if (!blazeFaceModel || video.videoWidth === 0 || video.videoHeight === 0) return;
+  
+  try {
+    // Ensure canvas dimensions match video
+    if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+    }
+    
+    const predictions = await blazeFaceModel.estimateFaces(video, false);
+    
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    if (predictions.length > 0) {
+      predictions.forEach(prediction => {
+        const x = prediction.topLeft[0];
+        const y = prediction.topLeft[1];
+        const width = prediction.bottomRight[0] - prediction.topLeft[0];
+        const height = prediction.bottomRight[1] - prediction.topLeft[1];
+        
+        // Skip invalid dimensions
+        if (width <= 0 || height <= 0) return;
+        
+        // Create a temporary canvas for the face region
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCanvas.width = width;
+        tempCanvas.height = height;
+        
+        // Draw the face region to the temporary canvas
+        tempCtx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
+        
+        // Apply blur effect
+        tempCtx.filter = 'blur(20px)';
+        tempCtx.drawImage(tempCanvas, 0, 0);
+        
+        // Draw the blurred face back to the main canvas
+        ctx.drawImage(tempCanvas, x, y);
+      });
+    }
+  } catch (err) {
+    console.error('Error in face detection:', err);
+  }
 }
 
-function nextPeer() {
+async function processVideoFrame() {
+  try {
+    if (faceBlurEnabled) {
+      const localVideo = document.getElementById('localVideo');
+      // Only process if video is playing and has dimensions
+      if (localVideo.videoWidth > 0 && localVideo.videoHeight > 0) {
+        await detectAndBlurFaces(
+          localVideo,
+          localVideoCanvas,
+          localCanvasCtx
+        );
+      }
+    }
+    
+    animationFrame = requestAnimationFrame(processVideoFrame);
+  } catch (err) {
+    console.error('Error in frame processing:', err);
+    // Continue the animation loop even if there's an error
+    animationFrame = requestAnimationFrame(processVideoFrame);
+  }
+}
+
+async function init() {
+  const nextPersonBtn = document.getElementById('nextPerson');
+  nextPersonBtn.style.animation = 'pulse 2s infinite';
+  
+  try {
+    await loadFaceDetectionModel();
+    faceBlurEnabled = true; // Set face blur enabled by default
+    const toggleBlurBtn = document.getElementById('toggleBlur');
+    toggleBlurBtn.textContent = 'Disable Face Blur';
+    toggleBlurBtn.classList.add('disabled');
+    
+    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    const localVideo = document.getElementById('localVideo');
+    localVideo.srcObject = localStream;
+    
+    // Wait for video to be loaded before initializing canvas and face detection
+    await new Promise((resolve) => {
+      localVideo.onloadedmetadata = () => {
+        localVideo.play();
+        resolve();
+      };
+    });
+    
+    // Setup canvas after video dimensions are known
+    localVideoCanvas = document.getElementById('localCanvas');
+    remoteVideoCanvas = document.getElementById('remoteCanvas');
+    localCanvasCtx = localVideoCanvas.getContext('2d');
+    remoteCanvasCtx = remoteVideoCanvas.getContext('2d');
+    
+    // Set canvas dimensions using the actual video dimensions
+    localVideoCanvas.width = localVideo.videoWidth;
+    localVideoCanvas.height = localVideo.videoHeight;
+    remoteVideoCanvas.width = localVideo.videoWidth;
+    remoteVideoCanvas.height = localVideo.videoHeight;
+    
+    // Start face blur processing only after everything is properly initialized
+    localVideoCanvas.style.display = 'block';
+    // Wait a frame to ensure video is really ready
+    await new Promise(requestAnimationFrame);
+    processVideoFrame();
+    
+    document.getElementById('localUsername').textContent = room.party.client.username;
+    document.getElementById('localAvatar').src = room.party.client.avatarUrl;
+    
+    setupWebRTC();
+    setupControls();
+    setupRoomHandlers();
+    setupChat();
+    setupDebugPanel();
+    setupFeedbackPanel();
+  } catch (err) {
+    console.error('Error during initialization:', err);
+  }
+}
+
+function setupWebRTC() {
+  peerConnection = new RTCPeerConnection(configuration);
+  
+  // Add local video track initially
+  localStream.getTracks().forEach(track => {
+    currentSender = peerConnection.addTrack(track, localStream);
+  });
+  
+  // Create canvas stream if face blur enabled
+  if (faceBlurEnabled) {
+    canvasStream = localVideoCanvas.captureStream(30);
+    replaceVideoTrack(canvasStream.getVideoTracks()[0]);
+  }
+  
+  peerConnection.ontrack = event => {
+    const remoteVideo = document.getElementById('remoteVideo');
+    remoteVideo.srcObject = event.streams[0];
+    
+    // Start checking for video stalls
+    lastRemoteFrameTime = Date.now();
+    if (videoStallCheckInterval) {
+      clearInterval(videoStallCheckInterval);
+    }
+    
+    remoteVideo.addEventListener('timeupdate', () => {
+      lastRemoteFrameTime = Date.now();
+      const warning = remoteVideo.parentElement.querySelector('.stall-warning');
+      if (warning) {
+        warning.style.display = 'none';
+      }
+    });
+
+    videoStallCheckInterval = setInterval(() => {
+      const timeSinceLastFrame = Date.now() - lastRemoteFrameTime;
+      let warning = remoteVideo.parentElement.querySelector('.stall-warning');
+      
+      if (timeSinceLastFrame > 2000) {
+        if (!warning) {
+          warning = document.createElement('div');
+          warning.className = 'stall-warning';
+          warning.textContent = 'Partner may have disconnected...';
+          remoteVideo.parentElement.appendChild(warning);
+        }
+        warning.style.display = 'block';
+      }
+    }, 2000);
+  };
+  
+  peerConnection.onicecandidate = event => {
+    if (event.candidate) {
+      room.send({
+        type: 'ice-candidate',
+        candidate: event.candidate,
+        targetPeer: currentPeer
+      });
+    }
+  };
+}
+
+function setupControls() {
+  const muteAudioBtn = document.getElementById('muteAudio');
+  const muteVideoBtn = document.getElementById('muteVideo');
+  const nextPersonBtn = document.getElementById('nextPerson');
+  const toggleBlurBtn = document.getElementById('toggleBlur');
+  
+  muteAudioBtn.onclick = () => {
+    const audioTrack = localStream.getAudioTracks()[0];
+    audioTrack.enabled = !audioTrack.enabled;
+    muteAudioBtn.textContent = audioTrack.enabled ? 'Mute Audio' : 'Unmute Audio';
+    muteAudioBtn.classList.toggle('disabled', !audioTrack.enabled);
+  };
+  
+  muteVideoBtn.onclick = () => {
+    const videoTrack = localStream.getVideoTracks()[0];
+    videoTrack.enabled = !videoTrack.enabled;
+    muteVideoBtn.textContent = videoTrack.enabled ? 'Mute Video' : 'Unmute Video';
+    muteVideoBtn.classList.toggle('disabled', !videoTrack.enabled);
+  };
+  
+  toggleBlurBtn.onclick = () => {
+    faceBlurEnabled = !faceBlurEnabled;
+    toggleBlurBtn.textContent = faceBlurEnabled ? 'Disable Face Blur' : 'Enable Face Blur';
+    toggleBlurBtn.classList.toggle('disabled', !faceBlurEnabled);
+    
+    if (faceBlurEnabled) {
+      localVideoCanvas.style.display = 'block';
+      // Create new canvas stream
+      canvasStream = localVideoCanvas.captureStream(30);
+      // Replace track with canvas stream
+      if (canvasStream && canvasStream.getVideoTracks()[0]) {
+        replaceVideoTrack(canvasStream.getVideoTracks()[0]);
+      }
+      processVideoFrame();
+    } else {
+      localVideoCanvas.style.display = 'none';
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+      }
+      // Stop the old canvas stream if it exists
+      if (canvasStream) {
+        canvasStream.getTracks().forEach(track => track.stop());
+        canvasStream = null;
+      }
+      // Replace with original video track 
+      const originalTrack = localStream.getVideoTracks()[0];
+      if (originalTrack) {
+        replaceVideoTrack(originalTrack);
+      }
+    }
+  };
+  
+  nextPersonBtn.onclick = findNewPeer;
+}
+
+function setupRoomHandlers() {
+  room.onmessage = async (event) => {
+    const data = event.data;
+    
+    // Only process WebRTC messages if we have a valid peer connection
+    if (!peerConnection || peerConnection.signalingState === 'closed') {
+      console.log('Ignoring message - peer connection is closed');
+      return;
+    }
+
+    switch(data.type) {
+      case 'offer':
+        if (data.targetPeer === room.party.client.id) {
+          try {
+            currentPeer = data.clientId;
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            
+            room.send({
+              type: 'answer',
+              answer: answer,
+              targetPeer: currentPeer
+            });
+            
+            updateRemoteUser(data.clientId);
+          } catch (err) {
+            console.error('Error handling offer:', err);
+            resetConnection();
+          }
+        }
+        break;
+        
+      case 'answer':
+        if (data.targetPeer === room.party.client.id) {
+          try {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+            updateRemoteUser(data.clientId);
+          } catch (err) {
+            console.error('Error handling answer:', err);
+            resetConnection();
+          }
+        }
+        break;
+        
+      case 'ice-candidate':
+        if (data.targetPeer === room.party.client.id) {
+          try {
+            // Check connection state before adding candidates
+            if (peerConnection.signalingState !== 'closed') {
+              await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+            }
+          } catch (err) {
+            console.error('Error adding ICE candidate:', err);
+          }
+        }
+        break;
+
+      case 'disconnect':
+        if (data.targetPeer === room.party.client.id) {
+          resetConnection();
+        }
+        break;
+        
+      case 'chat-message':
+        if (data.targetPeer === room.party.client.id) {
+          addMessageToChat({
+            message: data.message,
+            username: room.party.peers[data.clientId].username,
+            avatarUrl: room.party.peers[data.clientId].avatarUrl,
+            self: false
+          });
+        }
+        break;
+    }
+  };
+}
+
+function updateRemoteUser(peerId) {
+  const peer = room.party.peers[peerId];
   if (peer) {
-    peer.destroy();
+    document.getElementById('remoteUsername').textContent = peer.username;
+    document.getElementById('remoteAvatar').src = peer.avatarUrl;
+    document.getElementById('remoteUsername').classList.remove('connecting');
   }
-  connectToPeer();
-  status.textContent = "Looking for a new partner...";
-  status.classList.add('connecting');
-  chatMessages.innerHTML = '';
 }
 
-function toggleAudio() {
-  isAudioEnabled = !isAudioEnabled;
-  localStream.getAudioTracks().forEach(track => {
-    track.enabled = isAudioEnabled;
-  });
-  audioToggle.textContent = isAudioEnabled ? 'Mute' : 'Unmute';
+async function findNewPeer() {
+  try {
+    if (currentPeer) {
+      room.send({
+        type: 'disconnect',
+        targetPeer: currentPeer
+      });
+    }
+    
+    resetConnection();
+    
+    const availablePeers = Object.keys(room.party.peers).filter(id => id !== room.party.client.id);
+    if (availablePeers.length > 0) {
+      const randomPeer = availablePeers[Math.floor(Math.random() * availablePeers.length)];
+      currentPeer = randomPeer;
+      
+      // Ensure connection is in stable state before creating offer
+      if (peerConnection.signalingState === 'stable') {
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        
+        room.send({
+          type: 'offer',
+          offer: offer,
+          targetPeer: randomPeer
+        });
+      } else {
+        console.error('PeerConnection not in stable state');
+        resetConnection();
+      }
+    }
+  } catch (err) {
+    console.error('Error in findNewPeer:', err);
+    resetConnection();
+  }
 }
 
-function toggleVideo() {
-  isVideoEnabled = !isVideoEnabled;
-  localStream.getVideoTracks().forEach(track => {
-    track.enabled = isVideoEnabled;
-  });
-  videoToggle.textContent = isVideoEnabled ? 'Hide Video' : 'Show Video';
+function resetConnection() {
+  if (peerConnection) {
+    try {
+      // Remove all tracks before closing
+      peerConnection.getSenders().forEach(sender => {
+        peerConnection.removeTrack(sender);
+      });
+      peerConnection.close();
+    } catch (err) {
+      console.error('Error closing peer connection:', err);
+    }
+  }
+  
+  if (canvasStream) {
+    canvasStream.getTracks().forEach(track => {
+      try {
+        track.stop();
+      } catch (err) {
+        console.error('Error stopping canvas track:', err);
+      }
+    });
+    canvasStream = null;
+  }
+  
+  if (videoStallCheckInterval) {
+    clearInterval(videoStallCheckInterval);
+  }
+  
+  document.getElementById('remoteVideo').srcObject = null;
+  document.getElementById('remoteUsername').textContent = 'Waiting for connection...';
+  document.getElementById('remoteUsername').classList.add('connecting');
+  document.getElementById('remoteAvatar').src = '';
+  currentPeer = null;
+  document.getElementById('chatMessages').innerHTML = '';
+  
+  const warning = document.querySelector('.stall-warning');
+  if (warning) {
+    warning.remove();
+  }
+  
+  // Re-setup WebRTC connection
+  setupWebRTC();
 }
 
-function addMessage(text, type) {
-  const message = document.createElement('div');
-  message.classList.add('message', type);
-  message.textContent = text;
-  chatMessages.appendChild(message);
+function setupChat() {
+  const chatInput = document.getElementById('chatInput');
+  const sendButton = document.getElementById('sendMessage');
+  
+  function sendMessage() {
+    const message = chatInput.value.trim();
+    if (message && currentPeer) {
+      room.send({
+        type: 'chat-message',
+        message: message,
+        targetPeer: currentPeer
+      });
+      
+      // Add message to chat
+      addMessageToChat({
+        message,
+        username: room.party.client.username,
+        avatarUrl: room.party.client.avatarUrl,
+        self: true
+      });
+      
+      chatInput.value = '';
+    }
+  }
+  
+  sendButton.onclick = sendMessage;
+  
+  chatInput.onkeypress = (e) => {
+    if (e.key === 'Enter') {
+      sendMessage();
+    }
+  };
+}
+
+function addMessageToChat({ message, username, avatarUrl, self = false }) {
+  const chatMessages = document.getElementById('chatMessages');
+  const messageElement = document.createElement('div');
+  messageElement.className = `message ${self ? 'self' : ''}`;
+  
+  messageElement.innerHTML = `
+    <img class="avatar" src="${avatarUrl}" alt="${username}" />
+    <div class="message-content">
+      <div class="message-meta">${username}</div>
+      ${message}
+    </div>
+  `;
+  
+  chatMessages.appendChild(messageElement);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function sendMessage() {
-  const text = chatInput.value.trim();
-  if (text && peer && peer.connected) {
-    peer.send(new TextEncoder().encode(text));
-    addMessage(text, 'sent');
-    chatInput.value = '';
+function replaceVideoTrack(newTrack) {
+  try {
+    if (peerConnection && peerConnection.signalingState !== 'closed') {
+      const senders = peerConnection.getSenders();
+      const videoSender = senders.find(sender => sender.track?.kind === 'video');
+      if (videoSender) {
+        videoSender.replaceTrack(newTrack).catch(err => {
+          console.error('Error replacing track:', err);
+          // Try to renegotiate if track replacement fails
+          renegotiateConnection();
+        });
+      } else {
+        // If no video sender found, add the track
+        peerConnection.addTrack(newTrack, localStream);
+      }
+    }
+  } catch (err) {
+    console.error('Error in replaceVideoTrack:', err);
+    // Attempt to recover by renegotiating
+    renegotiateConnection();
   }
 }
 
-startButton.addEventListener('click', startChat);
-nextButton.addEventListener('click', nextPeer);
-audioToggle.addEventListener('click', toggleAudio);
-videoToggle.addEventListener('click', toggleVideo);
-sendButton.addEventListener('click', sendMessage);
-chatInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') {
-    sendMessage();
+async function renegotiateConnection() {
+  if (peerConnection && peerConnection.signalingState !== 'closed' && currentPeer) {
+    try {
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+      
+      room.send({
+        type: 'offer',
+        offer: offer,
+        targetPeer: currentPeer
+      });
+    } catch (err) {
+      console.error('Error renegotiating connection:', err);
+      // If renegotiation fails, reset the connection
+      resetConnection();
+    }
   }
-});
+}
+
+function setupDebugPanel() {
+  const debugPanel = document.getElementById('debugPanel');
+  const toggleDebug = document.getElementById('toggleDebug');
+  const closeDebug = document.getElementById('closeDebug');
+  
+  // Override console methods to capture logs
+  const originalConsole = {
+    log: console.log,
+    error: console.error,
+    warn: console.warn,
+    info: console.info
+  };
+  
+  function addLogEntry(type, ...args) {
+    const debugLog = document.getElementById('debugLog');
+    const entry = document.createElement('div');
+    entry.className = `debug-log-entry ${type}`;
+    entry.textContent = args.map(arg => 
+      typeof arg === 'object' ? JSON.stringify(arg) : arg
+    ).join(' ');
+    debugLog.appendChild(entry);
+    debugLog.scrollTop = debugLog.scrollHeight;
+    
+    // Call original console method
+    originalConsole[type].apply(console, args);
+  }
+  
+  // Override console methods
+  console.log = (...args) => addLogEntry('log', ...args);
+  console.error = (...args) => addLogEntry('error', ...args);
+  console.warn = (...args) => addLogEntry('warn', ...args);
+  console.info = (...args) => addLogEntry('info', ...args);
+  
+  toggleDebug.onclick = () => {
+    debugPanel.classList.toggle('active');
+    toggleDebug.textContent = debugPanel.classList.contains('active') ? 'Hide Debug' : 'Show Debug';
+  };
+  
+  closeDebug.onclick = () => {
+    debugPanel.classList.remove('active');
+    toggleDebug.textContent = 'Show Debug';
+  };
+  
+  // Update debug info
+  function updateDebugInfo() {
+    if (debugPanel.classList.contains('active')) {
+      document.getElementById('connectionState').textContent = `Connection: ${peerConnection?.connectionState || 'null'}`;
+      document.getElementById('iceConnectionState').textContent = `ICE: ${peerConnection?.iceConnectionState || 'null'}`;
+      document.getElementById('signalingState').textContent = `Signaling: ${peerConnection?.signalingState || 'null'}`;
+      
+      document.getElementById('localClientId').textContent = `Local ID: ${room.party.client.id}`;
+      document.getElementById('localVideoState').textContent = `Video: ${localStream?.getVideoTracks()[0]?.enabled ? 'enabled' : 'disabled'}`;
+      document.getElementById('localAudioState').textContent = `Audio: ${localStream?.getAudioTracks()[0]?.enabled ? 'enabled' : 'disabled'}`;
+      document.getElementById('blurState').textContent = `Face Blur: ${faceBlurEnabled ? 'enabled' : 'disabled'}`;
+      
+      document.getElementById('currentPeerId').textContent = `Remote ID: ${currentPeer || 'none'}`;
+      const remoteStream = document.getElementById('remoteVideo').srcObject;
+      document.getElementById('remoteVideoState').textContent = `Video: ${remoteStream?.getVideoTracks()[0]?.enabled ? 'enabled' : 'disabled'}`;
+      document.getElementById('remoteAudioState').textContent = `Audio: ${remoteStream?.getAudioTracks()[0]?.enabled ? 'enabled' : 'disabled'}`;
+    }
+    requestAnimationFrame(updateDebugInfo);
+  }
+  
+  updateDebugInfo();
+  
+  // Additional connection state logging
+  peerConnection.onconnectionstatechange = () => {
+    console.info(`Connection state changed: ${peerConnection.connectionState}`);
+  };
+  
+  peerConnection.oniceconnectionstatechange = () => {
+    console.info(`ICE connection state changed: ${peerConnection.iceConnectionState}`);
+  };
+  
+  peerConnection.onsignalingstatechange = () => {
+    console.info(`Signaling state changed: ${peerConnection.signalingState}`);
+  };
+}
+
+function setupFeedbackPanel() {
+  const feedbackPanel = document.getElementById('feedbackPanel');
+  const toggleFeedback = document.getElementById('toggleFeedback');
+  const feedbackForm = document.getElementById('feedbackForm');
+  const feedbackList = document.getElementById('feedbackList');
+
+  toggleFeedback.onclick = () => {
+    feedbackPanel.classList.toggle('active');
+    toggleFeedback.textContent = feedbackPanel.classList.contains('active') ? 'Hide Feedback' : 'Give Feedback';
+  };
+
+  feedbackForm.onsubmit = async (e) => {
+    e.preventDefault();
+    const textarea = feedbackForm.querySelector('textarea');
+    const feedback = textarea.value.trim();
+    
+    if (feedback) {
+      try {
+        await room.collection('feedback').create({
+          message: feedback,
+          timestamp: new Date().toISOString()
+        });
+        textarea.value = '';
+        alert('Thank you for your feedback!');
+      } catch (err) {
+        console.error('Error submitting feedback:', err);
+        alert('Error submitting feedback. Please try again.');
+      }
+    }
+  };
+
+  // Show feedback list only to me
+  if (room.party.client.username === 'DnDuality') {
+    feedbackList.style.display = 'block';
+    
+    room.collection('feedback').subscribe((feedbacks) => {
+      feedbackList.innerHTML = '';
+      feedbacks.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .forEach(feedback => {
+          const item = document.createElement('div');
+          item.className = 'feedback-item';
+          item.innerHTML = `
+            <div class="feedback-meta">
+              From: ${feedback.username}
+              <br>
+              ${new Date(feedback.created_at).toLocaleString()}
+            </div>
+            <div class="feedback-content">${feedback.message}</div>
+          `;
+          feedbackList.appendChild(item);
+        });
+    });
+  }
+}
+
+function dismissPrompt() {
+  document.getElementById('initialPrompt').style.display = 'none';
+  // Pulse the Find Someone New button to draw attention to it
+  const nextBtn = document.getElementById('nextPerson');
+  nextBtn.style.animation = 'pulse 2s';
+  setTimeout(() => {
+    nextBtn.style.animation = '';
+  }, 2000);
+}
+
+init();
 </script>
 </body></html>
