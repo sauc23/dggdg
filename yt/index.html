@@ -114,7 +114,7 @@
             const query = $(this).val();
             if (query.length >= 1) {
                 searchTimeout = setTimeout(() => {
-                    $.get(`https://tooreal.is-a-fullstack.dev/ytapi/opensearch/suggestions?query=${encodeURIComponent(query)}`)
+                    $.get(`/ytapi/opensearch/suggestions?query=${encodeURIComponent(query)}`)
                         .done(data => {
                             // The API returns an array where index 1 contains the suggestions
                             const suggestions = data[1] || [];
@@ -208,7 +208,7 @@
         $('#videoContainer').empty();
 
         $.ajax({
-            url: `https://tooreal.is-a-fullstack.dev/ytapi/trending?region=${region}`,
+            url: `/ytapi/trending?region=${region}`,
             method: 'GET',
             success: function(data) {
                 $('#loadingIndicator').addClass('hidden');
