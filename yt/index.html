@@ -1,4 +1,3 @@
-
 <html><head><base href="/"><!DOCTYPE html>
 <html lang="en">
 <head>
@@ -104,120 +103,101 @@
         </div>
     </div>
 
-    <script>
-    $(document).ready(function() {
-        let searchTimeout;
-        const savedServer = getCookie('server') || 'default';
-        $('#serverSwitcher').val(savedServer);
-
-        $('#searchQuery').on('input', function() {
-            clearTimeout(searchTimeout);
-            const query = $(this).val();
-            if (query.length >= 1) {
-                searchTimeout = setTimeout(() => {
-                    $.get(`/ytapi/opensearch/suggestions?query=${encodeURIComponent(query)}`)
-                        .done(data => {
-                            // The API returns an array where index 1 contains the suggestions
-                            const suggestions = data[1] || [];
-                            if (suggestions.length > 0) {
-                                showSuggestions(suggestions);
-                            } else {
-                                $('#searchSuggestions').hide();
-                            }
-                        })
-                        .fail(error => {
-                            console.error('Error fetching suggestions:', error);
-                            $('#searchSuggestions').hide();
-                        });
-                }, 300);
-            } else {
-                $('#searchSuggestions').hide();
-            }
+    <script>$(document).ready(function () {
+  let searchTimeout;
+  const savedServer = getCookie('server') || 'default';
+  $('#serverSwitcher').val(savedServer);
+  $('#searchQuery').on('input', function () {
+    clearTimeout(searchTimeout);
+    const query = $(this).val();
+    if (query.length >= 1) {
+      searchTimeout = setTimeout(() => {
+        $.get(`/ytapi/opensearch/suggestions?query=${encodeURIComponent(query)}`).done(data => {
+          const suggestions = data[1] || [];
+          if (suggestions.length > 0) {
+            showSuggestions(suggestions);
+          } else {
+            $('#searchSuggestions').hide();
+          }
+        }).fail(error => {
+          console.error('Error fetching suggestions:', error);
+          $('#searchSuggestions').hide();
         });
-
-        function showSuggestions(suggestions) {
-            const $suggestions = $('#searchSuggestions');
-            $suggestions.empty();
-            
-            suggestions.forEach(suggestion => {
-                const escapedSuggestion = suggestion.replace(/"/g, '&quot;');
-                $suggestions.append(`
+      }, 300);
+    } else {
+      $('#searchSuggestions').hide();
+    }
+  });
+  function showSuggestions(suggestions) {
+    const $suggestions = $('#searchSuggestions');
+    $suggestions.empty();
+    suggestions.forEach(suggestion => {
+      const escapedSuggestion = suggestion.replace(/"/g, '&quot;');
+      $suggestions.append(`
                     <div class="suggestion-item hover:bg-gray-700" onclick="selectSuggestion('${escapedSuggestion}')">
                         ${suggestion}
                     </div>
                 `);
-            });
-            
-            $suggestions.show();
-        }
-
-        $(document).click(function(e) {
-            if (!$(e.target).closest('#searchQuery, #searchSuggestions').length) {
-                $('#searchSuggestions').hide();
-            }
-        });
-
-        $('#serverSwitcher').change(function() {
-            changeServer();
-        });
-
-        loadTrending();
     });
-
-    function selectSuggestion(suggestion) {
-        $('#searchQuery').val(suggestion);
-        $('#searchSuggestions').hide();
-        searchVideos();
+    $suggestions.show();
+  }
+  $(document).click(function (e) {
+    if (!$(e.target).closest('#searchQuery, #searchSuggestions').length) {
+      $('#searchSuggestions').hide();
     }
-
-    function setCookie(name, value, days) {
-        const d = new Date();
-        d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
-        document.cookie = `${name}=${value};expires=${d.toUTCString()};path=/`;
-    }
-
-    function getCookie(name) {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-    }
-
-    function searchVideos() {
-        const query = $('#searchQuery').val();
-        if (query.trim()) {
-            window.location.href = `search.html?q=${encodeURIComponent(query)}`;
-        }
-    }
-
-    function changeServer() {
-        const serverPreference = $('#serverSwitcher').val();
-        setCookie('server', serverPreference, 30);
-        $('#serverSwitcher').val(serverPreference);
-        loadTrending();
-    }
-
-    function convertChannelUrl(url) {
-        const channelRegex = /^\/channel\/([a-zA-Z0-9_-]+)$/;
-        const match = url.match(channelRegex);
-        return match ? `chn.html?id=${match[1]}` : url;
-    }
-
-    function loadTrending() {
-        const serverPreference = getCookie('server') || 'default';
-        const region = serverPreference === 'us' ? 'US' : 'DE';
-        $('#loadingIndicator').removeClass('hidden');
-        $('#videoContainer').empty();
-
-        $.ajax({
-            url: `/ytapi/trending?region=${region}`,
-            method: 'GET',
-            success: function(data) {
-                $('#loadingIndicator').addClass('hidden');
-                data.forEach(video => {
-                    const videoIdMatch = video.url.match(/v=([a-zA-Z0-9_-]+)/);
-                    const videoId = videoIdMatch ? videoIdMatch[1] : null;
-                    const uploaderUrl = convertChannelUrl(video.uploaderUrl);
-                    const videoCard = $(`
+  });
+  $('#serverSwitcher').change(function () {
+    changeServer();
+  });
+  loadTrending();
+});
+function selectSuggestion(suggestion) {
+  $('#searchQuery').val(suggestion);
+  $('#searchSuggestions').hide();
+  searchVideos();
+}
+function setCookie(name, value, days) {
+  const d = new Date();
+  d.setTime(d.getTime() + days * 24 * 60 * 60 * 1000);
+  document.cookie = `${name}=${value};expires=${d.toUTCString()};path=/`;
+}
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+}
+function searchVideos() {
+  const query = $('#searchQuery').val();
+  if (query.trim()) {
+    window.location.href = `yt/search.html?q=${encodeURIComponent(query)}`;
+  }
+}
+function changeServer() {
+  const serverPreference = $('#serverSwitcher').val();
+  setCookie('server', serverPreference, 30);
+  $('#serverSwitcher').val(serverPreference);
+  loadTrending();
+}
+function convertChannelUrl(url) {
+  const channelRegex = /^\/channel\/([a-zA-Z0-9_-]+)$/;
+  const match = url.match(channelRegex);
+  return match ? `yt/chn.html?id=${match[1]}` : url;
+}
+function loadTrending() {
+  const serverPreference = getCookie('server') || 'default';
+  const region = serverPreference === 'us' ? 'US' : 'DE';
+  $('#loadingIndicator').removeClass('hidden');
+  $('#videoContainer').empty();
+  $.ajax({
+    url: `/ytapi/trending?region=${region}`,
+    method: 'GET',
+    success: function (data) {
+      $('#loadingIndicator').addClass('hidden');
+      data.forEach(video => {
+        const videoIdMatch = video.url.match(/v=([a-zA-Z0-9_-]+)/);
+        const videoId = videoIdMatch ? videoIdMatch[1] : null;
+        const uploaderUrl = convertChannelUrl(video.uploaderUrl);
+        const videoCard = $(`
                         <div class="video-card rounded-xl overflow-hidden fade-in">
                             <div class="relative overflow-hidden">
                                 <img src="${video.thumbnail}" alt="${video.title}" class="w-full video-thumbnail">
@@ -249,21 +229,20 @@
                             </div>
                         </div>
                     `);
-                    $('#videoContainer').append(videoCard);
-                });
-            },
-            error: function(error) {
-                $('#loadingIndicator').addClass('hidden');
-                $('#videoContainer').html(`
+        $('#videoContainer').append(videoCard);
+      });
+    },
+    error: function (error) {
+      $('#loadingIndicator').addClass('hidden');
+      $('#videoContainer').html(`
                     <div class="col-span-full text-center text-red-500">
                         <p>Error loading trending videos. Please try again later.</p>
                     </div>
                 `);
-                console.error('Error fetching trending videos:', error);
-            }
-        });
+      console.error('Error fetching trending videos:', error);
     }
-    </script>
+  });
+}</script>
 
 </body>
-</html></html>
+</html></head></html>
