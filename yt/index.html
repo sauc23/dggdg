@@ -213,7 +213,7 @@
             success: function(data) {
                 $('#loadingIndicator').addClass('hidden');
                 data.forEach(video => {
-                    const videoIdMatch = video.url.match(/v=([a-zA-Z0-9_-]+)/);
+                    const videoIdMatch = video.url.match(v=([a-zA-Z0-9_-]+)/);
                     const videoId = videoIdMatch ? videoIdMatch[1] : null;
                     const uploaderUrl = convertChannelUrl(video.uploaderUrl);
                     const videoCard = $(`
@@ -229,7 +229,7 @@
                                 <div class="text-gray-300 text-sm">
                                     <a href="${uploaderUrl}" class="hover:text-blue-400 transition-colors">
                                         ${video.uploaderName}
-                                    </a>
+                                    <a>
                                 </div>
                                 <div class="text-gray-400 text-sm mt-1">
                                     ${video.views.toLocaleString()} views • 
@@ -239,10 +239,10 @@
                                     <div class="flex gap-2 mt-3">
                                         <a href="vid.html?id=${videoId}" class="btn btn-gradient text-white px-4 py-1 rounded-lg flex-1 text-center">
                                             Watch 360P
-                                        </a>
+                                        <a>
                                         <a href="aud.html?id=${videoId}" class="btn btn-gradient text-white px-4 py-1 rounded-lg flex-1 text-center">
                                             Listen
-                                        </a>
+                                        <a>
                                     </div>
                                 ` : ''}
                             </div>
