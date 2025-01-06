@@ -124,7 +124,7 @@ body {
     <div class="text-center">
         <img class="avatar" alt="Avatar">
         <h1 class="channel-name"></h1>
-        <p class="text-muted" id="subscribers"></p>
+        <p class="text-muted mt-2" id="subscribers"></p>
     </div>
     <p class="description mt-4"></p>
     <h3 class="mt-5 mb-4 text-xl font-bold">Related Streams</h3>
@@ -188,8 +188,8 @@ function fetchNextPage() {
                     <div class="card">
                         <img src="https://cors-proxy.cooks.fyi/${stream.thumbnail}" class="card-img-top" alt="${stream.title}">
                         <div class="card-body">
-                            <h5 class="card-title">${stream.title}</h5>
-                            <p class="card-text text-muted">${stream.uploaderName}</p>
+                            <h5 class="card-title mt-2">${stream.title}</h5>
+                            <p class="card-text text-muted mt-2">${stream.uploaderName}</p>
                             <a href="/yt/vid.html?id=${videoId}" class="btn btn-gradient btn-sm">Watch (360P)</a>
                             <a href="/yt/aud.html?id=${videoId}" class="btn btn-gradient btn-sm">Listen</a>
                         </div>
