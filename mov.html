@@ -312,7 +312,10 @@ async function playContent(item) {
     episodeControls.style.display = 'none';
     currentTvShow = null;
   }
-  
+    const subUrl = item.media_type === 'movie' 
+    ? `/movapi/movie-sub-${item.id}.vtt`
+    : `/movapi/tv-sub-${item.id}-1-1.vtt`;
+    
   const videoUrl = item.media_type === 'movie' 
     ? `/movapi/movie-${item.id}.m3u8`
     : `/movapi/tv-${item.id}-1-1.m3u8`;
@@ -323,6 +326,12 @@ async function playContent(item) {
       type: 'hls',
       width: '100%',
       height: '100%',
+       tracks: [{
+            file: "https://example.com/path/to/your/subtitles.vtt",
+            label: "English",
+            kind: "subtitles",
+            default: true
+        }],
       primary: 'html5',
       hlshtml: true,
       autostart: true
@@ -352,8 +361,21 @@ document.getElementById('episodeSelect').addEventListener('change', (e) => {
     const seasonNumber = document.getElementById('seasonSelect').value;
     const episodeNumber = e.target.value;
     const videoUrl = `/movapi/tv-${currentTvShow.id}-${seasonNumber}-${episodeNumber}.m3u8`;
+    const subUrl = `/movapi/tv-sub-${currentTvShow.id}-${seasonNumber}-${episodeNumber}.vtt`;
     player.load({
-      file: videoUrl
+          file: videoUrl,
+      type: 'hls',
+      width: '100%',
+      height: '100%',
+       tracks: [{
+            file: subUrl,
+            label: "English",
+            kind: "subtitles",
+            default: true
+        }],
+      primary: 'html5',
+      hlshtml: true,
+      autostart: true
     });
   }
 });
