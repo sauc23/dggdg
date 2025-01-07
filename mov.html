@@ -213,7 +213,7 @@ let currentTvShow = null;
 
 async function searchContent(query) {
   const response = await fetch(
-    `/usprx/https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${query}`
+    `/deprx/https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${query}`
   );
   const data = await response.json();
   displayResults(data.results);
@@ -252,7 +252,7 @@ function displayResults(results) {
 
 async function fetchTvShowDetails(tvId) {
   const response = await fetch(
-    `/usprx/https://api.themoviedb.org/3/tv/${tvId}?api_key=${TMDB_API_KEY}`
+    `/deprx/https://api.themoviedb.org/3/tv/${tvId}?api_key=${TMDB_API_KEY}`
   );
   return await response.json();
 }
@@ -284,7 +284,7 @@ function updateEpisodeSelectors(tvShow) {
 
 async function loadEpisodesForSeason(tvId, seasonNumber) {
   const response = await fetch(
-    `/usprx/https://api.themoviedb.org/3/tv/${tvId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}`
+    `/deprx/https://api.themoviedb.org/3/tv/${tvId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}`
   );
   const seasonData = await response.json();
   
@@ -371,7 +371,7 @@ document.getElementById('search').addEventListener('input', (e) => {
 
 async function loadPopularContent() {
   const response = await fetch(
-    `/usprx/https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}`
+    `/deprx/https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}`
   );
   const data = await response.json();
   displayResults(data.results);
