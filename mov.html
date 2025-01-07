@@ -1,5 +1,5 @@
 <html><head><base href="/">
-<title>StreamFlix - Movies & TV</title>
+<title>StreamFlix - Movies &amp; TV</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
@@ -204,43 +204,18 @@ body {
 <script src="https://content.jwplatform.com/libraries/IDzF9Zmk.js"></script>
 <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 
-<script>
-const TMDB_API_KEY = '14f5f562e442151a000f9cdca2371efb';
+<script>const TMDB_API_KEY = '14f5f562e442151a000f9cdca2371efb';
 const TMDB_API_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxNGY1ZjU2MmU0NDIxNTFhMDAwZjljZGNhMjM3MWVmYiIsInN1YiI6IjY1MzU5ZTYwYzhhNWFjMDExY2YwNWNkZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.CaHMAamkArB_IXMrS0nRmFp8th-aw-7nxvARRIXQW3w';
-
 let player = null;
 let currentTvShow = null;
-
 async function searchContent(query) {
-  const response = await fetch(
-    `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${query}`
-  );
+  const response = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${query}`);
   const data = await response.json();
-  
-  // Filter out anime content by checking genres
-  const filteredResults = await Promise.all(
-    data.results.map(async (item) => {
-      if (item.media_type === 'movie' || item.media_type === 'tv') {
-        const genreResponse = await fetch(
-          `https://api.themoviedb.org/3/${item.media_type}/${item.id}?api_key=${TMDB_API_KEY}`
-        );
-        const details = await genreResponse.json();
-        // Check if any genre contains "Animation" and keywords contain "anime"
-        if (details.genres && !details.genres.some(g => g.name === "Animation")) {
-          return item;
-        }
-      }
-      return null;
-    })
-  );
-  
-  displayResults(filteredResults.filter(item => item !== null));
+  displayResults(data.results.filter(item => item.media_type === 'movie' || item.media_type === 'tv'));
 }
-
 function displayResults(results) {
   const container = document.getElementById('results');
   container.innerHTML = '';
-  
   results.forEach(item => {
     if ((item.media_type === 'movie' || item.media_type === 'tv') && item.poster_path) {
       const card = document.createElement('div');
@@ -261,54 +236,37 @@ function displayResults(results) {
           </div>
         </div>
       `;
-      
       card.onclick = () => playContent(item);
       container.appendChild(card);
     }
   });
 }
-
 async function fetchTvShowDetails(tvId) {
-  const response = await fetch(
-    `https://api.themoviedb.org/3/tv/${tvId}?api_key=${TMDB_API_KEY}`
-  );
+  const response = await fetch(`https://api.themoviedb.org/3/tv/${tvId}?api_key=${TMDB_API_KEY}`);
   return await response.json();
 }
-
 function updateEpisodeSelectors(tvShow) {
   const seasonSelect = document.getElementById('seasonSelect');
   const episodeSelect = document.getElementById('episodeSelect');
-  
   seasonSelect.innerHTML = '';
   episodeSelect.innerHTML = '';
-  
   if (!tvShow || !tvShow.seasons) return;
-  
-  const validSeasons = tvShow.seasons
-    .filter(season => season.season_number > 0)
-    .sort((a, b) => a.season_number - b.season_number);
-  
+  const validSeasons = tvShow.seasons.filter(season => season.season_number > 0).sort((a, b) => a.season_number - b.season_number);
   validSeasons.forEach(season => {
     const option = document.createElement('option');
     option.value = season.season_number;
     option.textContent = `Season ${season.season_number}`;
     seasonSelect.appendChild(option);
   });
-  
   if (validSeasons.length > 0) {
     loadEpisodesForSeason(tvShow.id, validSeasons[0].season_number);
   }
 }
-
 async function loadEpisodesForSeason(tvId, seasonNumber) {
-  const response = await fetch(
-    `https://api.themoviedb.org/3/tv/${tvId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}`
-  );
+  const response = await fetch(`https://api.themoviedb.org/3/tv/${tvId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}`);
   const seasonData = await response.json();
-  
   const episodeSelect = document.getElementById('episodeSelect');
   episodeSelect.innerHTML = '';
-  
   seasonData.episodes.forEach(episode => {
     const option = document.createElement('option');
     option.value = episode.episode_number;
@@ -316,14 +274,11 @@ async function loadEpisodesForSeason(tvId, seasonNumber) {
     episodeSelect.appendChild(option);
   });
 }
-
 async function playContent(item) {
   const playerContainer = document.querySelector('.player-container');
   const episodeControls = document.querySelector('.episode-controls');
   playerContainer.style.display = 'block';
-  
   let videoUrl, subtitleUrl;
-  
   if (item.media_type === 'tv') {
     currentTvShow = await fetchTvShowDetails(item.id);
     episodeControls.style.display = 'flex';
@@ -336,7 +291,6 @@ async function playContent(item) {
     videoUrl = `/movapi/movie-${item.id}.m3u8`;
     subtitleUrl = `/movapi/movie-sub-${item.id}.vtt`;
   }
-    
   if (!player) {
     player = jwplayer('videoPlayer').setup({
       file: videoUrl,
@@ -365,21 +319,18 @@ async function playContent(item) {
     });
   }
 }
-
 document.querySelector('.close-player').onclick = () => {
   document.querySelector('.player-container').style.display = 'none';
   if (player) {
     player.stop();
   }
 };
-
-document.getElementById('seasonSelect').addEventListener('change', (e) => {
+document.getElementById('seasonSelect').addEventListener('change', e => {
   if (currentTvShow) {
     loadEpisodesForSeason(currentTvShow.id, e.target.value);
   }
 });
-
-document.getElementById('episodeSelect').addEventListener('change', (e) => {
+document.getElementById('episodeSelect').addEventListener('change', e => {
   if (currentTvShow) {
     const seasonNumber = document.getElementById('seasonSelect').value;
     const episodeNumber = e.target.value;
@@ -396,9 +347,8 @@ document.getElementById('episodeSelect').addEventListener('change', (e) => {
     });
   }
 });
-
 let searchTimeout;
-document.getElementById('search').addEventListener('input', (e) => {
+document.getElementById('search').addEventListener('input', e => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     const query = e.target.value.trim();
@@ -407,15 +357,10 @@ document.getElementById('search').addEventListener('input', (e) => {
     }
   }, 500);
 });
-
 async function loadPopularContent() {
-  const response = await fetch(
-    `https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}`
-  );
+  const response = await fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}`);
   const data = await response.json();
   displayResults(data.results);
 }
-
-loadPopularContent();
-</script>
+loadPopularContent();</script>
 </body></html>
