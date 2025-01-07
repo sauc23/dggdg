@@ -213,10 +213,28 @@ let currentTvShow = null;
 
 async function searchContent(query) {
   const response = await fetch(
-    `/deprx/https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${query}`
+    `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${query}`
   );
   const data = await response.json();
-  displayResults(data.results);
+  
+  // Filter out anime content by checking genres
+  const filteredResults = await Promise.all(
+    data.results.map(async (item) => {
+      if (item.media_type === 'movie' || item.media_type === 'tv') {
+        const genreResponse = await fetch(
+          `https://api.themoviedb.org/3/${item.media_type}/${item.id}?api_key=${TMDB_API_KEY}`
+        );
+        const details = await genreResponse.json();
+        // Check if any genre contains "Animation" and keywords contain "anime"
+        if (details.genres && !details.genres.some(g => g.name === "Animation")) {
+          return item;
+        }
+      }
+      return null;
+    })
+  );
+  
+  displayResults(filteredResults.filter(item => item !== null));
 }
 
 function displayResults(results) {
@@ -252,7 +270,7 @@ function displayResults(results) {
 
 async function fetchTvShowDetails(tvId) {
   const response = await fetch(
-    `/deprx/https://api.themoviedb.org/3/tv/${tvId}?api_key=${TMDB_API_KEY}`
+    `https://api.themoviedb.org/3/tv/${tvId}?api_key=${TMDB_API_KEY}`
   );
   return await response.json();
 }
@@ -284,7 +302,7 @@ function updateEpisodeSelectors(tvShow) {
 
 async function loadEpisodesForSeason(tvId, seasonNumber) {
   const response = await fetch(
-    `/deprx/https://api.themoviedb.org/3/tv/${tvId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}`
+    `https://api.themoviedb.org/3/tv/${tvId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}`
   );
   const seasonData = await response.json();
   
@@ -304,21 +322,20 @@ async function playContent(item) {
   const episodeControls = document.querySelector('.episode-controls');
   playerContainer.style.display = 'block';
   
+  let videoUrl, subtitleUrl;
+  
   if (item.media_type === 'tv') {
     currentTvShow = await fetchTvShowDetails(item.id);
     episodeControls.style.display = 'flex';
     updateEpisodeSelectors(currentTvShow);
+    videoUrl = `/movapi/tv-${item.id}-1-1.m3u8`;
+    subtitleUrl = `/movapi/tv-sub-${item.id}-1-1.vtt`;
   } else {
     episodeControls.style.display = 'none';
     currentTvShow = null;
+    videoUrl = `/movapi/movie-${item.id}.m3u8`;
+    subtitleUrl = `/movapi/movie-sub-${item.id}.vtt`;
   }
-    const subUrl = item.media_type === 'movie' 
-    ? `/movapi/movie-sub-${item.id}.vtt`
-    : `/movapi/tv-sub-${item.id}-1-1.vtt`;
-    
-  const videoUrl = item.media_type === 'movie' 
-    ? `/movapi/movie-${item.id}.m3u8`
-    : `/movapi/tv-${item.id}-1-1.m3u8`;
     
   if (!player) {
     player = jwplayer('videoPlayer').setup({
@@ -326,19 +343,25 @@ async function playContent(item) {
       type: 'hls',
       width: '100%',
       height: '100%',
-       tracks: [{
-            file: subUrl,
-            label: "English",
-            kind: "subtitles",
-            default: true
-        }],
       primary: 'html5',
       hlshtml: true,
-      autostart: true
+      autostart: true,
+      tracks: [{
+        file: subtitleUrl,
+        label: "English",
+        kind: "captions",
+        default: true
+      }]
     });
   } else {
     player.load({
-      file: videoUrl
+      file: videoUrl,
+      tracks: [{
+        file: subtitleUrl,
+        label: "English",
+        kind: "captions",
+        default: true
+      }]
     });
   }
 }
@@ -361,21 +384,15 @@ document.getElementById('episodeSelect').addEventListener('change', (e) => {
     const seasonNumber = document.getElementById('seasonSelect').value;
     const episodeNumber = e.target.value;
     const videoUrl = `/movapi/tv-${currentTvShow.id}-${seasonNumber}-${episodeNumber}.m3u8`;
-    const subUrl = `/movapi/tv-sub-${currentTvShow.id}-${seasonNumber}-${episodeNumber}.vtt`;
+    const subtitleUrl = `/movapi/tv-sub-${currentTvShow.id}-${seasonNumber}-${episodeNumber}.vtt`;
     player.load({
-          file: videoUrl,
-      type: 'hls',
-      width: '100%',
-      height: '100%',
-       tracks: [{
-            file: subUrl,
-            label: "English",
-            kind: "subtitles",
-            default: true
-        }],
-      primary: 'html5',
-      hlshtml: true,
-      autostart: true
+      file: videoUrl,
+      tracks: [{
+        file: subtitleUrl,
+        label: "English",
+        kind: "captions",
+        default: true
+      }]
     });
   }
 });
@@ -393,7 +410,7 @@ document.getElementById('search').addEventListener('input', (e) => {
 
 async function loadPopularContent() {
   const response = await fetch(
-    `/deprx/https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}`
+    `https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_API_KEY}`
   );
   const data = await response.json();
   displayResults(data.results);
