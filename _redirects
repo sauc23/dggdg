@@ -5,6 +5,7 @@
 /p /go.html 200
 /games/* https://hdun.org/games/:splat 200
 /~/* https://hdun.org/~/:splat 200
+/tmdb/* https://api.themoviedb.org/:splat 200
 /movprox/* https://jolly-surf-2979.alappan077.workers.dev/:splat 200
 /movapi/* https://ererer.jdx3.org/:splat 200
 /ytapi/* https://pipedapi.reallyaweso.me/:splat 200
