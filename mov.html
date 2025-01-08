@@ -1,4 +1,4 @@
-<html><head><base href="/">
+<html><head>
 <title>StreamFlix - Movies &amp; TV</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -128,6 +128,7 @@ body {
 #videoPlayer {
   width: 100%;
   height: calc(100% - 60px);
+  border: none;
   border-radius: 16px 16px 0 0;
 }
 
@@ -170,6 +171,32 @@ body {
   color: #ffd700;
   font-size: 0.9rem;
 }
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .movie-card img {
+    height: 240px;
+  }
+
+  .player-container {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  #videoPlayer {
+    border-radius: 0;
+  }
+
+  .episode-controls {
+    border-radius: 0;
+  }
+}
 </style>
 </head>
 <body class="min-h-screen">
@@ -193,7 +220,7 @@ body {
   <div class="close-player">
     <i class="fas fa-times"></i>
   </div>
-  <div id="videoPlayer"></div>
+  <iframe id="videoPlayer" allowfullscreen></iframe>
   <div class="episode-controls">
     <select id="seasonSelect" class="episode-select"></select>
     <select id="episodeSelect" class="episode-select"></select>
@@ -201,12 +228,9 @@ body {
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://content.jwplatform.com/libraries/IDzF9Zmk.js"></script>
-<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 
 <script>const TMDB_API_KEY = '14f5f562e442151a000f9cdca2371efb';
 const TMDB_API_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxNGY1ZjU2MmU0NDIxNTFhMDAwZjljZGNhMjM3MWVmYiIsInN1YiI6IjY1MzU5ZTYwYzhhNWFjMDExY2YwNWNkZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.CaHMAamkArB_IXMrS0nRmFp8th-aw-7nxvARRIXQW3w';
-let player = null;
 let currentTvShow = null;
 async function searchContent(query) {
   const response = await fetch(`/tmdb/3/search/multi?api_key=${TMDB_API_KEY}&query=${query}`);
@@ -278,52 +302,22 @@ async function playContent(item) {
   const playerContainer = document.querySelector('.player-container');
   const episodeControls = document.querySelector('.episode-controls');
   playerContainer.style.display = 'block';
-  let videoUrl, subtitleUrl;
+  
   if (item.media_type === 'tv') {
     currentTvShow = await fetchTvShowDetails(item.id);
     episodeControls.style.display = 'flex';
     updateEpisodeSelectors(currentTvShow);
-    videoUrl = `/movapi/tv-${item.id}-1-1.m3u8`;
-    subtitleUrl = `/movapi/tv-sub-${item.id}-1-1.vtt`;
+    document.getElementById('videoPlayer').src = `https://edit.jdx3.org/tv.php?id=${item.id}&s=1&e=1`;
   } else {
     episodeControls.style.display = 'none';
     currentTvShow = null;
-    videoUrl = `/movapi/movie-${item.id}.m3u8`;
-    subtitleUrl = `/movapi/movie-sub-${item.id}.vtt`;
-  }
-  if (!player) {
-    player = jwplayer('videoPlayer').setup({
-      file: videoUrl,
-      type: 'hls',
-      width: '100%',
-      height: '100%',
-      primary: 'html5',
-      hlshtml: true,
-      autostart: true,
-      tracks: [{
-        file: subtitleUrl,
-        label: "English",
-        kind: "captions",
-        default: true
-      }]
-    });
-  } else {
-    player.load({
-      file: videoUrl,
-      tracks: [{
-        file: subtitleUrl,
-        label: "English",
-        kind: "captions",
-        default: true
-      }]
-    });
+    document.getElementById('videoPlayer').src = `https://edit.jdx3.org/mov.php?id=${item.id}`;
   }
 }
 document.querySelector('.close-player').onclick = () => {
-  document.querySelector('.player-container').style.display = 'none';
-  if (player) {
-    player.stop();
-  }
+  const playerContainer = document.querySelector('.player-container');
+  playerContainer.style.display = 'none';
+  document.getElementById('videoPlayer').src = '';
 };
 document.getElementById('seasonSelect').addEventListener('change', e => {
   if (currentTvShow) {
@@ -334,17 +328,8 @@ document.getElementById('episodeSelect').addEventListener('change', e => {
   if (currentTvShow) {
     const seasonNumber = document.getElementById('seasonSelect').value;
     const episodeNumber = e.target.value;
-    const videoUrl = `/movapi/tv-${currentTvShow.id}-${seasonNumber}-${episodeNumber}.m3u8`;
-    const subtitleUrl = `/movapi/tv-sub-${currentTvShow.id}-${seasonNumber}-${episodeNumber}.vtt`;
-    player.load({
-      file: videoUrl,
-      tracks: [{
-        file: subtitleUrl,
-        label: "English",
-        kind: "captions",
-        default: true
-      }]
-    });
+    document.getElementById('videoPlayer').src = 
+      `https://edit.jdx3.org/tv.php?id=${currentTvShow.id}&s=${seasonNumber}&e=${episodeNumber}`;
   }
 });
 let searchTimeout;
