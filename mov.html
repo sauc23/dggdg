@@ -1,4 +1,4 @@
-<html><head>
+<html><head><base href="/">
 <title>StreamFlix - Movies &amp; TV</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -159,6 +159,22 @@ body {
   border-color: var(--primary);
 }
 
+.go-button {
+  background: #2ecc71;
+  color: white;
+  padding: 5px 20px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.go-button:hover {
+  background: #27ae60;
+  transform: translateY(-1px);
+}
+
 .category-tag {
   background: var(--primary);
   padding: 0.25rem 0.75rem;
@@ -220,10 +236,11 @@ body {
   <div class="close-player">
     <i class="fas fa-times"></i>
   </div>
-  <iframe id="videoPlayer" allowfullscreen scrolling="no"></iframe>
+  <iframe id="videoPlayer" allowfullscreen></iframe>
   <div class="episode-controls">
     <select id="seasonSelect" class="episode-select"></select>
     <select id="episodeSelect" class="episode-select"></select>
+    <button id="goButton" class="go-button">Go</button>
   </div>
 </div>
 
@@ -302,12 +319,13 @@ async function playContent(item) {
   const playerContainer = document.querySelector('.player-container');
   const episodeControls = document.querySelector('.episode-controls');
   playerContainer.style.display = 'block';
-  
   if (item.media_type === 'tv') {
     currentTvShow = await fetchTvShowDetails(item.id);
     episodeControls.style.display = 'flex';
     updateEpisodeSelectors(currentTvShow);
-    document.getElementById('videoPlayer').src = `https://edit.jdx3.org/tv.php?id=${item.id}&s=1&e=1`;
+    const seasonNumber = document.getElementById('seasonSelect').value;
+    const episodeNumber = document.getElementById('episodeSelect').value;
+    document.getElementById('videoPlayer').src = `https://edit.jdx3.org/tv.php?id=${item.id}&s=${seasonNumber}&e=${episodeNumber}`;
   } else {
     episodeControls.style.display = 'none';
     currentTvShow = null;
@@ -319,19 +337,19 @@ document.querySelector('.close-player').onclick = () => {
   playerContainer.style.display = 'none';
   document.getElementById('videoPlayer').src = '';
 };
+document.getElementById('goButton').addEventListener('click', () => {
+  if (currentTvShow) {
+    const seasonNumber = document.getElementById('seasonSelect').value;
+    const episodeNumber = document.getElementById('episodeSelect').value;
+    document.getElementById('videoPlayer').src = `https://edit.jdx3.org/tv.php?id=${currentTvShow.id}&s=${seasonNumber}&e=${episodeNumber}`;
+  }
+});
 document.getElementById('seasonSelect').addEventListener('change', e => {
   if (currentTvShow) {
     loadEpisodesForSeason(currentTvShow.id, e.target.value);
   }
 });
-document.getElementById('episodeSelect').addEventListener('change', e => {
-  if (currentTvShow) {
-    const seasonNumber = document.getElementById('seasonSelect').value;
-    const episodeNumber = e.target.value;
-    document.getElementById('videoPlayer').src = 
-      `https://edit.jdx3.org/tv.php?id=${currentTvShow.id}&s=${seasonNumber}&e=${episodeNumber}`;
-  }
-});
+document.getElementById('episodeSelect').addEventListener('change', e => {});
 let searchTimeout;
 document.getElementById('search').addEventListener('input', e => {
   clearTimeout(searchTimeout);
