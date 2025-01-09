@@ -325,11 +325,11 @@ async function playContent(item) {
     updateEpisodeSelectors(currentTvShow);
     const seasonNumber = document.getElementById('seasonSelect').value;
     const episodeNumber = document.getElementById('episodeSelect').value;
-    document.getElementById('videoPlayer').src = `https://edit.jdx3.org/tv.php?id=${item.id}&s=${seasonNumber}&e=${episodeNumber}`;
+    document.getElementById('videoPlayer').src = `/tv.html?id=${item.id}&s=${seasonNumber}&e=${episodeNumber}`;
   } else {
     episodeControls.style.display = 'none';
     currentTvShow = null;
-    document.getElementById('videoPlayer').src = `https://edit.jdx3.org/mov.php?id=${item.id}`;
+    document.getElementById('videoPlayer').src = `/mov.html?id=${item.id}`;
   }
 }
 document.querySelector('.close-player').onclick = () => {
@@ -341,7 +341,7 @@ document.getElementById('goButton').addEventListener('click', () => {
   if (currentTvShow) {
     const seasonNumber = document.getElementById('seasonSelect').value;
     const episodeNumber = document.getElementById('episodeSelect').value;
-    document.getElementById('videoPlayer').src = `https://edit.jdx3.org/tv.php?id=${currentTvShow.id}&s=${seasonNumber}&e=${episodeNumber}`;
+    document.getElementById('videoPlayer').src = `/tv.html?id=${currentTvShow.id}&s=${seasonNumber}&e=${episodeNumber}`;
   }
 });
 document.getElementById('seasonSelect').addEventListener('change', e => {
