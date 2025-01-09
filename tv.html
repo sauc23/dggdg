@@ -39,14 +39,14 @@
             const id = urlParams.get('id');
 
             const player = jwplayer("jwplayer").setup({
-                file: `https://ererer.jdx3.org/tv-${id}-${s}-${e}.m3u8`,
+                file: `/movapi/tv-${id}-${s}-${e}.m3u8`,
                 width: "100%",
                 height: "100%",
                 mute: true, // Mute the video to allow autoplay
                 cast: {}, // This enables the cast functionality
                 airplay: true,
                       tracks: [{
-        file: `https://ererer.jdx3.org/tv-sub-${id}-${s}-${e}.vtt`,
+        file: `/movapi/tv-sub-${id}-${s}-${e}.vtt`,
         label: "English",
         kind: "captions",
         default: true
