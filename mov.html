@@ -325,7 +325,7 @@ async function playContent(item) {
     updateEpisodeSelectors(currentTvShow);
     const seasonNumber = document.getElementById('seasonSelect').value;
     const episodeNumber = document.getElementById('episodeSelect').value;
-    document.getElementById('videoPlayer').src = `/movapi/tt.php?type=tv&id=${item.id}&s=${seasonNumber}&e=${episodeNumber}`;
+    document.getElementById('videoPlayer').src = `/movapi/tt.php?type=tv&id=${item.id}&s=${seasonNumber}&e=1`;
   } else {
     episodeControls.style.display = 'none';
     currentTvShow = null;
